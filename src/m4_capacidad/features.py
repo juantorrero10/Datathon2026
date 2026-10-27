@@ -118,11 +118,12 @@ def construir_dataset_m4(panel: pd.DataFrame, municipios: pd.DataFrame) -> pd.Da
     df.attrs["imputacion_tiempo"] = imputacion_tiempo
     df["escuelas_1000"] = df["centros_educativos_alta"] / df["poblacion"] * 1_000
 
-    # Saneo declarado (convención de la capa real): indicador sin dato = 0.
-    # Sin esto los aannos 2010-2011 desaparecerían del panel.
-    df[["salud_10k", "paradas_1000", "telefono_1000", "var_paro", "paro_100"]] = df[
-        ["salud_10k", "paradas_1000", "telefono_1000", "var_paro", "paro_100"]
-    ].fillna(0.0)
+    # Saneo real: el xlsx deja años ENTEROS sin indicadores (telefonía 2010-2011,
+    # sanidad 2014 y 2025, transporte 2024-2025). Un estado municipal con
+    # servicios rellenados a cero NO es un estado real y envenena los ranks de
+    # la cohorte (empates a 0): se EXCLUYE del entrenamiento y solo se
+    # conservan los años completamente observados.
+    df = df[df["salud_10k"].notna() & df["paradas_1000"].notna() & df["telefono_1000"].notna()].copy()
 
     # ── crec_10y_pct: CAGR anualizado en la ventana disponible hasta t (≥ 4 años) ──
     def crec(cod: str, t: int):

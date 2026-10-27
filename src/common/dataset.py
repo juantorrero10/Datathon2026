@@ -17,8 +17,8 @@ REPO = Path(__file__).resolve().parents[2]
 
 XLSX = REPO / "data" / "dataset_155_municipios_2010-2025.xlsx"
 
-DIR_MODELOS = REPO / "oracle" / "models"
-DIR_SQL = REPO / "oracle" / "sql"
+DIR_MODELOS = REPO / "oracle_db" / "models"
+DIR_SQL = REPO / "oracle_db" / "sql"
 DIR_DOC = REPO / "doc"
 
 ANIO_BASE = 2025      # último año observado de la serie
