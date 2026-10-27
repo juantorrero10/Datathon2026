@@ -138,8 +138,18 @@ def main() -> None:
         done.append(f"portada: {n_enlaces} enlace(s) reenrutados a la pág. 10")
 
     # verificaciones de integridad
+    #    (codificado en el export para que SOBREVIVA a los reimports: los cambios
+    #    hechos a mano en el builder se pierden con cada reinstalación).
+    assert text.count("p_plug_name=>'Dashboard institucional'") == 1
+    text = text.replace("p_plug_name=>'Dashboard institucional'", "p_plug_name=>'Simulador What-If'")
+    i_ancla = text.index("p_static_id=>'dashboard-institucional'")
+    i_t = text.index(",p_plug_template=>4073835273271169698", i_ancla)
+    text = text[:i_t] + ",p_plug_template=>4502917002193490937" + text[i_t + len(",p_plug_template=>4073835273271169698"):]
+    done.append("región pág. 10: 'Simulador What-If' + plantilla Blank with Attributes")
+
+    # verificaciones de integridad
     assert "Perfil Institucional" not in text, "quedan restos de 'Perfil Institucional'"
-    assert text.count("'Simulador What-If'") == 3, "renombres no son 3"
+    assert text.count("'Simulador What-If'") == 4, "renombres no son 4"
     assert "p_name=>'Perfil Ciudadano (retirada)'" in text
     assert "WKSP_DATATHON.PV_SIMULA(" in text and "g_x07" in text
     assert "g_x07" in text

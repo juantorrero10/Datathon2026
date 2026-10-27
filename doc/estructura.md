@@ -10,7 +10,7 @@
 
 | Fichero / carpeta | Qué es |
 |---|---|
-| `opencode.json` | Configuración de **OpenCode** para este workspace: define el servidor MCP local `apex-mcp` (que conecta a Oracle/APEX). El `APEX_MCP_READ_ONLY=false` permite DML/DDL por MCP. Las credenciales viven en `C:\Users\juan\apex-mcp\.env`, fuera del repo. |
+| `opencode.json` | Configuración de **OpenCode** para este workspace: define el servidor MCP local `apex-mcp` (que conecta a Oracle/APEX). El `APEX_MCP_READ_ONLY=false` permite DML/DDL por MCP. |
 | `data/dataset_155_municipios_2010-2025.xlsx` | **Único dataset de entrada**: 5 sheets (LEEME, panel municipio-año 2010-2025 = 2.480 filas × 32 columnas oficiales INE/CAM, estática de los 155 municipios < 50.000 hab, diccionario, fuentes). Alimenta los pipelines de M3 y M4. |
 
 ## src/ — código Python del pipeline (esto es el proyecto)

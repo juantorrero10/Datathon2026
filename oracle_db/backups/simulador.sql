@@ -519,10 +519,10 @@ wwv_flow_imp_page.create_page(
 );
 wwv_flow_imp_page.create_page_plug(
  p_id=>wwv_flow_imp.id(8900550584000013)
-,p_plug_name=>'Dashboard institucional'
+,p_plug_name=>'Simulador What-If'
 ,p_static_id=>'dashboard-institucional'
 ,p_region_template_options=>'#DEFAULT#'
-,p_plug_template=>4073835273271169698
+,p_plug_template=>4502917002193490937
 ,p_plug_display_sequence=>10
 ,p_plug_item_display_point=>'ABOVE'
 ,p_location=>null
