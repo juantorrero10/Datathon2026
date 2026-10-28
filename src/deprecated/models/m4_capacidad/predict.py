@@ -1,5 +1,5 @@
 """
-predict.py - Inferencia auditada del Modelo M4 (Capacidad de Acogida) integrando:
+predict.py - Inferencia auditada del Modelo M2 (Capacidad de Acogida) integrando:
   1. Predicción y banda de incertidumbre al 95 %
   2. Reglas duras de no-compensatoriedad
   3. Atribuciones aditivas normalizadas sobre background fijo con SHA-256
@@ -13,14 +13,14 @@ from typing import Dict, Any
 import joblib
 import numpy as np
 
-from src.lodcore.models.m4_capacidad.train import FEATURES_M4, M4CapacidadModel
-from src.lodcore.models.m4_capacidad.reglas_no_compensatorias import aplicar_salvaguarda_no_compensatoria
+from src.lodcore.models.m2_capacidad.train import FEATURES_M4, M4CapacidadModel
+from src.lodcore.models.m2_capacidad.reglas_no_compensatorias import aplicar_salvaguarda_no_compensatoria
 from src.lodcore.explain.shap_to_json import explicar_instancia_a_json
 from src.lodcore.explain.redaccion_natural import redactar_explicacion_shap
 
 def predecir_capacidad_municipio(
     fila_muni: Dict[str, Any],
-    model_dir: str = "src/lodcore/models/m4_capacidad"
+    model_dir: str = "src/lodcore/models/m2_capacidad"
 ) -> Dict[str, Any]:
     dir_p = Path(model_dir)
     model: M4CapacidadModel = joblib.load(dir_p / "model.joblib")

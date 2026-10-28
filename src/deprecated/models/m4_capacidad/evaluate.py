@@ -1,6 +1,6 @@
 """
-evaluate.py - Protocolo de validación rigurosa, cálculo de baselines y bandas bootstrap para M4 (Capacidad de Acogida).
-Evalúa M4 frente a 4 baselines naive bajo Spatial GroupKFold por comarca y calcula intervalos 95% (B=1000).
+evaluate.py - Protocolo de validación rigurosa, cálculo de baselines y bandas bootstrap para M2 (Capacidad de Acogida).
+Evalúa M2 frente a 4 baselines naive bajo Spatial GroupKFold por comarca y calcula intervalos 95% (B=1000).
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.metrics import mean_absolute_error, root_mean_squared_error, r2_score
 from sklearn.model_selection import GroupKFold
 
-from src.lodcore.models.m4_capacidad.train import FEATURES_M4
+from src.lodcore.models.m2_capacidad.train import FEATURES_M4
 
 def evaluar_m4_con_baselines_y_bootstrap(
     data_path: str = "data/validated/municipios_panel_validado.csv",
@@ -32,7 +32,7 @@ def evaluar_m4_con_baselines_y_bootstrap(
 
     gkf = GroupKFold(n_splits=n_splits)
 
-    # 1. Modelo M4 (Gradient Boosting Regressor)
+    # 1. Modelo M2 (Gradient Boosting Regressor)
     oof_m4 = np.zeros_like(y)
     for tr, val in gkf.split(X, y, groups=groups):
         gbr = GradientBoostingRegressor(
@@ -108,7 +108,7 @@ def evaluar_m4_con_baselines_y_bootstrap(
             "explicacion_target_determinista": (
                 "El target (ICA) se construye mediante una combinación de sub-índices con salvaguarda no-compensatoria. "
                 "El R² in-sample de 1.0 NO es generalización. La métrica defendible es r2_cv_oof = 0.7345 (MAE CV = 5.15 ptos). "
-                f"M4 reduce el error de predicción en un {reduccion_error_vs_media_pct}% frente a predecir la media ({res_baselines['dummy_mean']['mae']} ptos)."
+                f"M2 reduce el error de predicción en un {reduccion_error_vs_media_pct}% frente a predecir la media ({res_baselines['dummy_mean']['mae']} ptos)."
             ),
             "apto_para_jurado": True,
             "metrica_defendible_jurado": "R² CV OOF comarcal = 0.7345 (MAE = 5.15 ptos en escala 0-100)"

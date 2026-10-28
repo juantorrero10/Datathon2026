@@ -1,0 +1,63 @@
+{
+  "modelo": "m7_escuelas",
+  "fecha": "2026-10-29T00:21:43",
+  "version_sklearn": "1.9.1",
+  "dataset": {
+    "fichero": "dataset_155_municipios_2010-2025.xlsx",
+    "sha256": "9b19d9746bb6248518dee21587854af0d3b8d5483bb8291c146f3e2e9b6beef5",
+    "nota_dato": "escuelas: solo corte estático; 23/155 municipios con 0 escuelas en xlsx",
+    "imputacion_tiempo": {
+      "n_imputados": 99,
+      "a": 14.31386663987677,
+      "b": 0.9032072967025827,
+      "regla": "tiempo_centro_min = max(0, a + b·distancia_sol_km) si falta",
+      "municipios_con_dato": 56
+    },
+    "filas_entrenamiento": 124,
+    "filas_test": 31,
+    "split": "iloc 80/20 (cohortes establecidas)"
+  },
+  "tarea": "Escuelas esperadas dado el tamaño (cross-sectional; sin serie temporal)",
+  "contrato_salida": "salida = escuelas esperadas (conteos continuos); el consumidor lo divide por pob para /1k",
+  "features": [
+    "log_pob",
+    "edad_media",
+    "pct_menor_15",
+    "pct_65mas",
+    "distancia_sol_km",
+    "tiempo_centro_min"
+  ],
+  "columnas_despliegue": [
+    "LOG_POB (SQL: LN(poblacion proyectada por M3))",
+    "EDAD_MEDIA, PCT_MENOR_15, PCT_65MAS, DISTANCIA_SOL_KM, TIEMPO_CENTRO_MIN (de PV_BASE_M3_M4; tiempo_centro_min imputado con la regla del M4)"
+  ],
+  "orden_features": "posicional",
+  "parametros": {
+    "bootstrap": true,
+    "ccp_alpha": 0.0,
+    "criterion": "squared_error",
+    "max_depth": 4,
+    "max_features": 1.0,
+    "max_leaf_nodes": null,
+    "max_samples": null,
+    "min_impurity_decrease": 0.0,
+    "min_samples_leaf": 10,
+    "min_samples_split": 2,
+    "min_weight_fraction_leaf": 0.0,
+    "monotonic_cst": null,
+    "n_estimators": 300,
+    "n_jobs": null,
+    "oob_score": false,
+    "random_state": 2026,
+    "verbose": 0,
+    "warm_start": false
+  },
+  "metricas": {
+    "mae_test_escuelas": 1.1947882477799106,
+    "mediana_abs_err_test": 1.440068950150956
+  },
+  "extra": {
+    "semantica": "no es una tasa de construcción; es el stock esperado por tamaño de municipio"
+  },
+  "hash_dataset": "9b19d9746bb6248518dee21587854af0d3b8d5483bb8291c146f3e2e9b6beef5"
+}

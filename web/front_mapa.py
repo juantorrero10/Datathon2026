@@ -199,7 +199,7 @@ function dibujarLeyenda(){
   var mx=MVMAX||1;var dec=capaDef(CAPA).dec;
   el.innerHTML="<div class=\"leg\"></div><div class=\"leg-et\"><span class=\"neg\">\u25BC "+fmt(-mx,dec)+"</span><span>0</span><span class=\"pos\">\u25B1 +"+fmt(mx,dec)+"</span></div>";
 }
-function dibujarEstado(){$("mvEstado").innerHTML="Mostrando <b>"+DATA.length+"</b> municipios \u00B7 A\u00F1o <b>"+ANIO+"</b><br>Modelos: M3 + M4 (\u00D75) + M6 \u00B7 ONNX dentro de Oracle";}
+function dibujarEstado(){$("mvEstado").innerHTML="Mostrando <b>"+DATA.length+"</b> municipios \u00B7 A\u00F1o <b>"+ANIO+"</b><br>Modelos: M1 + M2 (\u00D75) + M3 + M4 \u00B7 ONNX dentro de Oracle";}
 function pintarTarjeta(m,fij){
   var c=capaDef(CAPA);var v=capaVal(m);var col=(num(v)>0)?"pos":(num(v)<0)?"neg":"";
   var cuerpo=(CAPA==="lim")
@@ -209,7 +209,7 @@ function pintarTarjeta(m,fij){
     ["Poblaci\u00f3n",fmt(m.pob_2025)+" \u2192 "+fmt(m.pob_y)],
     ["\u0394Poblaci\u00f3n",(m.d_pob>0?"+":"")+fmt(m.d_pob)+" ("+fmt(m.d_pob_pct,2)+"%)"],
     ["\u00CDndice",fmt(m.indice_2025,1)+" \u2192 "+fmt(m.indice_y,1)],
-    ["Banda M3",fmt(m.p10)+" / "+fmt(m.p90)],
+    ["Banda M1",fmt(m.p10)+" / "+fmt(m.p90)],
     ["Salud/10k",fmt(m.salud_10k_2025,2)+" \u2192 "+fmt(m.salud_10k_y,2)],
     ["Escuelas/1k",fmt(m.escuelas_1000_2025,3)+" \u2192 "+fmt(m.escuelas_1000_y,3)],
     ["Paradas/1k",fmt(m.paradas_1000_2025,3)+" \u2192 "+fmt(m.paradas_1000_y,3)],
@@ -220,7 +220,7 @@ function pintarTarjeta(m,fij){
   var grid=filas.map(function(x){return "<div class=\"f\"><div>"+x[0]+"</div><b>"+x[1]+"</b></div>";}).join("");
   $("mvTarjeta").innerHTML="<b class=\"t\">"+esc(m.nombre)+"</b><div class=\"an\">cod "+m.cod+" \u00B7 a\u00F1o "+ANIO+" \u00B7 base 2025</div>"
    +"<div class=\"filas\">"+cuerpo+grid+"</div>"
-   +"<div class=\"cierre\">Factor limitante: <b>"+esc(m.factor_limitante)+"</b> \u00B7 M3+M4+M6 ONNX en Oracle \u00B7 salida ef\u00EDmera</div>";
+   +"<div class=\"cierre\">Factor limitante: <b>"+esc(m.factor_limitante)+"</b> \u00B7 M1+M2+M3+M4 ONNX en Oracle \u00B7 salida ef\u00EDmera</div>";
   $("mvTarjeta").style.display="block";
 }
 function cerrarTarjeta(){$("mvTarjeta").style.display="none";}

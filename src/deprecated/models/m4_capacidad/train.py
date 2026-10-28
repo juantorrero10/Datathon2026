@@ -1,5 +1,5 @@
 """
-train.py - Entrenamiento del Modelo M4 (Core: Capacidad de Acogida + atribuciones
+train.py - Entrenamiento del Modelo M2 (Core: Capacidad de Acogida + atribuciones
 aditivas + No-Compensatoriedad), persistencia auditable de `shap_background.json`
 y exportación ONNX para Oracle Database.
 """
@@ -128,7 +128,7 @@ class M4CapacidadModel(BaseLoDCOREModel):
 
 def run_training_m4(
     data_path: str = "data/validated/municipios_panel_validado.csv",
-    out_dir: str = "src/lodcore/models/m4_capacidad",
+    out_dir: str = "src/lodcore/models/m2_capacidad",
     oracle_onnx_dir: str = "oracle/onnx"
 ) -> Dict[str, Any]:
     df = pd.read_csv(data_path)
@@ -136,7 +136,7 @@ def run_training_m4(
     y = df["indice_capacidad_global"].to_numpy(dtype=np.float32)
     groups = df["comarca"].to_numpy()
 
-    _p = cargar_params().get("models", {}).get("m4_capacidad", {})
+    _p = cargar_params().get("models", {}).get("m2_capacidad", {})
     model = M4CapacidadModel(
         n_estimators=int(_p.get("n_estimators", 120)),
         learning_rate=float(_p.get("learning_rate", 0.05)),
@@ -173,10 +173,10 @@ def run_training_m4(
 
     oracle_p = Path(oracle_onnx_dir)
     oracle_p.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(onnx_file, oracle_p / "m4_capacidad.onnx")
+    shutil.copy2(onnx_file, oracle_p / "m2_capacidad.onnx")
 
     return metrics
 
 if __name__ == "__main__":
     m = run_training_m4()
-    print(f"[M4 Capacidad] Entrenado y exportado a ONNX. MAE CV: {m['mae_cv_mean']} | Hash atribuciones: {m['shap_background_sha256'][:12]}...")
+    print(f"[M2 Capacidad] Entrenado y exportado a ONNX. MAE CV: {m['mae_cv_mean']} | Hash atribuciones: {m['shap_background_sha256'][:12]}...")

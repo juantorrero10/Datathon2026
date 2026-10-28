@@ -6,7 +6,7 @@ Responde a una sola pregunta: ¿sirve el índice para algo?
   A) ICA vs crecimiento real (2020-2025, 2015-2020, 2010-2015)
   B) Indicadores reales vs crecimiento (valor catastral, migración, densidad...)
   C) Regla no compensatoria: ¿los municipios colapsados crecen menos?
-  D) Backtest de M3: predecir 2020 y 2025, comparar con la realidad
+  D) Backtest de M1: predecir 2020 y 2025, comparar con la realidad
      y batir dos líneas base (persistencia y crecimiento comarcal)
   E) Coincidencia entre el top-5 por ICA y el top-5 por crecimiento
 
@@ -28,7 +28,7 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-from src.lodcore.models.m4_capacidad.reglas_no_compensatorias import (
+from src.lodcore.models.m2_capacidad.reglas_no_compensatorias import (
     aplicar_salvaguarda_no_compensatoria,
 )
 
@@ -39,7 +39,7 @@ OUT_PATH = Path("data/output/validacion_ica.json")
 # Ventanas de crecimiento analizadas
 VENTANAS: Tuple[Tuple[int, int], ...] = ((2010, 2015), (2015, 2020), (2020, 2025))
 
-# Parámetros del backtest: replican src/lodcore/models/m3_demografia/project.py
+# Parámetros del backtest: replican src/lodcore/models/m1_demografia/project.py
 CAGR_MIN = -0.02
 CAGR_MAX = 0.06
 
@@ -190,7 +190,7 @@ def analizar_regla_no_compensatoria(df: pd.DataFrame) -> Dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
-# D) Backtest de M3
+# D) Backtest de M1
 # ---------------------------------------------------------------------------
 
 def _cagr(valor_inicial: float, valor_final: float, anios: int) -> float:
@@ -368,7 +368,7 @@ def _imprimir(res: Dict[str, Any]) -> None:
             f"{d['crecimiento_medio_2020_2025']:+.2f} %"
         )
 
-    print("\nD) Backtest M3")
+    print("\nD) Backtest M1")
     for ventana, modelos in res["D_backtest_m3"].items():
         print(f"  {ventana}")
         for nombre, m in modelos.items():

@@ -14,7 +14,7 @@ from src.lodcore.config.thresholds import (
     PROPORCION_POBLACION_ESCOLAR,
     UMBRAL_ICA_BAJA
 )
-from src.lodcore.models.m4_capacidad.predict import predecir_capacidad_municipio
+from src.lodcore.models.m2_capacidad.predict import predecir_capacidad_municipio
 from src.lodcore.data.provenance import TipoOrigen
 
 class MunicipioNoEncontrado(Exception):
@@ -31,7 +31,7 @@ class SimuladorWhatIfRequest(BaseModel):
 def ejecutar_simulacion_whatif(
     req: SimuladorWhatIfRequest,
     data_path: str = "data/validated/municipios_panel_validado.csv",
-    model_dir: str = "src/lodcore/models/m4_capacidad"
+    model_dir: str = "src/lodcore/models/m2_capacidad"
 ) -> Dict[str, Any]:
     df = pd.read_csv(data_path)
     match = df.loc[df["id_municipio"] == req.id_municipio]

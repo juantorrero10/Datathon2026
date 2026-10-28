@@ -1,17 +1,17 @@
 """
-train.py - Ejecución de proyecciones demográficas y persistencia de métricas de M3.
+train.py - Ejecución de proyecciones demográficas y persistencia de métricas de M1.
 """
 
 import json
 from pathlib import Path
 from typing import Dict, Any
 import pandas as pd
-from src.lodcore.models.m3_demografia.project import proyectar_demografia_municipio
+from src.lodcore.models.m1_demografia.project import proyectar_demografia_municipio
 from src.lodcore.data.provenance import TipoOrigen
 
 def run_training_m3(
     data_path: str = "data/validated/municipios_panel_validado.csv",
-    out_dir: str = "src/lodcore/models/m3_demografia"
+    out_dir: str = "src/lodcore/models/m1_demografia"
 ) -> Dict[str, Any]:
     df = pd.read_csv(data_path)
     proyecciones = [proyectar_demografia_municipio(row.to_dict()) for _, row in df.iterrows()]
@@ -48,4 +48,4 @@ def run_training_m3(
 
 if __name__ == "__main__":
     m = run_training_m3()
-    print(f"[M3 Demografía] Proyección 2030: {m['poblacion_proyectada_2030']:.0f} hab | Saturados en estrés +10%: {m['municipios_saturados_bajo_estres_10pct']}")
+    print(f"[M1 Demografía] Proyección 2030: {m['poblacion_proyectada_2030']:.0f} hab | Saturados en estrés +10%: {m['municipios_saturados_bajo_estres_10pct']}")

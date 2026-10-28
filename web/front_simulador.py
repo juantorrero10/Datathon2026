@@ -105,13 +105,13 @@ FRONT_SIM = r"""<style>
    <label>Diferencial de paradas <span id="swParV" class="difval zero">0</span></label>
    <input id="swPar" type="range" step="1" value="0" disabled>
    <div id="swErr" class="err"></div>
-   <div class="note">Se emplean los modelos <b>M3</b> (proyeccion base al a\00F1o seleccionado) y <b>M4</b> (Suma de diferenciales y 5 dimensiones)</div>
+   <div class="note">Se emplean los modelos <b>M1</b> (proyeccion base al a&ntilde;o seleccionado), <b>M2</b> (5 dimensiones del estado) y <b>M4</b> (stocks proyectados: viviendas/salud/paradas + escuelas esperadas)</div>
   </div>
   <div class="stage locked" id="swStage">
    <div id="swOverlay"><span id="swSpin" class="spin" style="display:none"></span>Ejecuta la simulaci&oacute;n para visualizar</div>
    <div id="swRes" style="padding:16px">
     <div class="kpis">
-     <div class="kpi"><div class="l">&Iacute;ndice antes &rarr; escenario</div><b><span id="swIdxA">--</span> &rarr; <span id="swIdxB">--</span></b><div class="s"><span id="swDelta"></span> <span id="swLimit" style="color:#64748b"></span></div></div>     <div class="kpi"><div class="l">Poblaci&oacute;n proyectada M3</div><b id="swPobBase">--</b><div class="s">banda <span id="swBand">--</span> &middot; factor <span id="swFactor">--</span></div></div>
+     <div class="kpi"><div class="l">&Iacute;ndice antes &rarr; escenario</div><b><span id="swIdxA">--</span> &rarr; <span id="swIdxB">--</span></b><div class="s"><span id="swDelta"></span> <span id="swLimit" style="color:#64748b"></span></div></div>     <div class="kpi"><div class="l">Poblaci&oacute;n proyectada M1</div><b id="swPobBase">--</b><div class="s">banda <span id="swBand">--</span> &middot; factor <span id="swFactor">--</span></div></div>
      <div class="kpi"><div class="l">Poblaci&oacute;n escenario</div><b id="swPob">--</b><div class="s" id="swPobS"></div></div>
     </div>
     <div class="card">

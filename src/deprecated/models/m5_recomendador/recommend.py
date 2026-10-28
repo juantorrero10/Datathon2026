@@ -6,7 +6,7 @@ y filtrado de salvaguarda no compensatoria (Modelo M5).
 from typing import Dict, Any, List
 import numpy as np
 import pandas as pd
-from src.lodcore.models.m4_capacidad.reglas_no_compensatorias import aplicar_salvaguarda_no_compensatoria
+from src.lodcore.models.m2_capacidad.reglas_no_compensatorias import aplicar_salvaguarda_no_compensatoria
 from src.lodcore.data.provenance import TipoOrigen
 
 def calcular_similitud_coseno_ponderada(

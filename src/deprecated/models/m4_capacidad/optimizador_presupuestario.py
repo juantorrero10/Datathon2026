@@ -1,6 +1,6 @@
 """
 optimizador_presupuestario.py - Asignación Presupuestaria por Comarca (Heurística Voraz Acotada MVP).
-Fase F1 / M4: Distribuye una partida presupuestaria pública entre los municipios de una comarca
+Fase F1 / M2: Distribuye una partida presupuestaria pública entre los municipios de una comarca
 maximizando la ganancia neta en capacidad de acogida efectiva y desbloqueando cuellos de botella
 sanitarios y educativos, evitando inversiones inútiles en municipios limitados por la vivienda.
 """
@@ -19,7 +19,7 @@ from src.lodcore.config.thresholds import (
     MAX_OCUPACION_ESCOLAR_PCT
 )
 from src.lodcore.data.provenance import TipoOrigen
-from src.lodcore.models.m4_capacidad.reglas_no_compensatorias import aplicar_salvaguarda_no_compensatoria
+from src.lodcore.models.m2_capacidad.reglas_no_compensatorias import aplicar_salvaguarda_no_compensatoria
 
 @dataclass
 class AsignacionMunicipio:

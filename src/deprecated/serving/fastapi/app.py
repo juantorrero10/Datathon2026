@@ -19,7 +19,7 @@ from src.lodcore.serving.fastapi.whatif import (
     MunicipioNoEncontrado,
     ejecutar_simulacion_whatif
 )
-from src.lodcore.models.m4_capacidad.optimizador_presupuestario import optimizar_presupuesto_comarca
+from src.lodcore.models.m2_capacidad.optimizador_presupuestario import optimizar_presupuesto_comarca
 
 class OptimizadorPresupuestoRequest(BaseModel):
     comarca: str = Field(default="Sierra Oeste", description="Comarca de la Comunidad de Madrid o 'todas'")
@@ -29,7 +29,7 @@ app = FastAPI(
     title="LoDCORE Madrid • API Nivel N3 (Ciudadano & Institución)",
     description=(
         "Servicio de inferencia interactiva para el II Datathon LoDCOREMadrid 2026. "
-        "Expone `/recomendar` (M5 MCDM), `/whatif` (M4 contrafactual con SHAP) y "
+        "Expone `/recomendar` (M5 MCDM), `/whatif` (M2 contrafactual con SHAP) y "
         "`/optimizar-presupuesto` (asignación presupuestaria determinista por comarca)."
     ),
     version=__version__
@@ -64,7 +64,7 @@ def post_recomendar(req: PreferenciasCiudadanoRequest):
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-@app.post("/whatif", tags=["Panel Institucional (M4)"])
+@app.post("/whatif", tags=["Panel Institucional (M2)"])
 def post_whatif(req: SimuladorWhatIfRequest):
     """
     Ejecuta una simulación contrafactual sobre un municipio ante cambios demográficos o
@@ -79,7 +79,7 @@ def post_whatif(req: SimuladorWhatIfRequest):
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Error en simulación: {exc}") from exc
 
-@app.post("/optimizar-presupuesto", tags=["Panel Institucional (M4-OPT)"])
+@app.post("/optimizar-presupuesto", tags=["Panel Institucional (M2-OPT)"])
 def post_optimizar_presupuesto(req: OptimizadorPresupuestoRequest):
     """
     Asigna un presupuesto cerrado entre los municipios de una comarca para maximizar la acogida

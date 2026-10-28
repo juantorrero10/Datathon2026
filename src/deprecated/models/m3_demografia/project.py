@@ -1,7 +1,7 @@
 """
 project.py - Proyección demográfica a 5 y 10 años mediante extrapolación geométrica
 calibrada con la proyección padronal intermedia de 2031, con banda al 95 %
-y escenarios de estrés (+5 %, +10 %) según el Modelo M3.
+y escenarios de estrés (+5 %, +10 %) según el Modelo M1.
 """
 
 from typing import Dict, Any, List

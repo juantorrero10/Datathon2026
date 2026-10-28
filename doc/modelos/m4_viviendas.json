@@ -1,0 +1,106 @@
+{
+  "modelo": "m4_viviendas",
+  "fecha": "2026-10-29T00:35:23",
+  "version_sklearn": "1.9.1",
+  "dataset": {
+    "fichero": "dataset_155_municipios_2010-2025.xlsx",
+    "sha256": "9b19d9746bb6248518dee21587854af0d3b8d5483bb8291c146f3e2e9b6beef5",
+    "col_stock": [
+      "unidades_urbanas_residencial"
+    ],
+    "t_despliegue": 2025,
+    "filas_entrenamiento": 1860,
+    "filas_test": 465,
+    "anios_sampleados": [
+      2020,
+      2021,
+      2022,
+      2023,
+      2024
+    ],
+    "split": "GroupShuffleSplit por municipio (test 20 %, semilla 2026)"
+  },
+  "tarea": "Factor de crecimiento del stock ['unidades_urbanas_residencial'] a horizonte h (1..5)",
+  "contrato_salida": "log_factor en escala log1p: EXP(pred) ** (h/h_model) recompone; h_model=5 max",
+  "features": [
+    "log_st",
+    "st_cagr_1",
+    "st_cagr_3",
+    "st_cagr_5",
+    "st_cagr_10",
+    "st_vol_5",
+    "st_p1000",
+    "log_pob",
+    "pob_cagr_5",
+    "horizonte"
+  ],
+  "columnas_despliegue": [
+    "VIV_LOG_POB",
+    "VIV_LOG_ST",
+    "VIV_CAGR_1",
+    "VIV_CAGR_3",
+    "VIV_CAGR_5",
+    "VIV_CAGR_10",
+    "VIV_VOL_5",
+    "VIV_P1000",
+    "VIV_POB_CAGR_5",
+    "VIV_T_DEPLOY"
+  ],
+  "orden_features": "posicional",
+  "parametros": {
+    "alpha": 0.9,
+    "ccp_alpha": 0.0,
+    "criterion": "deprecated",
+    "init": null,
+    "learning_rate": 0.05,
+    "loss": "squared_error",
+    "max_depth": 3,
+    "max_features": null,
+    "max_leaf_nodes": null,
+    "min_impurity_decrease": 0.0,
+    "min_samples_leaf": 1,
+    "min_samples_split": 2,
+    "min_weight_fraction_leaf": 0.0,
+    "n_estimators": 400,
+    "n_iter_no_change": null,
+    "random_state": 2026,
+    "subsample": 0.9,
+    "tol": 0.0001,
+    "validation_fraction": 0.1,
+    "verbose": 0,
+    "warm_start": false
+  },
+  "metricas": {
+    "mae_log_test": 0.011153128883796652,
+    "mae_log_train": 0.0037687810529893136,
+    "error_absoluto_mediano_pct_test": 0.5529605654220004,
+    "por_horizonte": {
+      "1": {
+        "mediana_abs_pct": 0.32512260232318013,
+        "sesgo_absorber_pct": 0.1381
+      },
+      "2": {
+        "mediana_abs_pct": 0.5143170446511509,
+        "sesgo_absorber_pct": 0.2645
+      },
+      "3": {
+        "mediana_abs_pct": 0.7679958363929906,
+        "sesgo_absorber_pct": 0.2886
+      },
+      "4": {
+        "mediana_abs_pct": 0.9097711872170622,
+        "sesgo_absorber_pct": 0.4273
+      },
+      "5": {
+        "mediana_abs_pct": 1.085097160682246,
+        "sesgo_absorber_pct": 0.5342
+      }
+    },
+    "paridad_onnx_sklearn_rel": 1.675485379552323e-07
+  },
+  "extra": {
+    "semantica_stock": "log1p (ln(1+stock)): pemite stocks 0; el inverso es stock(t+h) = (1+stock_base)*EXP(pred)**(h/h_model) - 1",
+    "keys_horizonte": "h_model = LEAST(h, 5); para h>5 el consumidor compone EXP(pred(5))**(h/5)"
+  },
+  "hash_dataset": "9b19d9746bb6248518dee21587854af0d3b8d5483bb8291c146f3e2e9b6beef5"
+}

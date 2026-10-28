@@ -13,21 +13,31 @@ REPO = Path(__file__).resolve().parents[1]
 SCRIPTS = REPO / "scripts"
 MODELOS = REPO / "oracle_db" / "models"
 
-# M3 deja un único .onnx; M4 baja a la base como 5 ficheros (uno por dimensión);
-# M6 (valor catastral proyectado, mapa) deja otro .onnx único.
+# M1 deja un único .onnx; M2 baja a la base como 5 ficheros (uno por dimensión);
+# M3 (valor catastral proyectado, mapa) deja otro .onnx único; M4 (stocks
+# proyectados: viviendas/salud/paradas + escuelas esperadas) deja otros 4.
 EXITOS = [
-    ("run_m3_demografia.py", ["m3_demografia.onnx"]),
+    ("run_m1_demografia.py", ["m1_demografia.onnx"]),
     (
-        "run_m4_capacidad.py",
+        "run_m2_capacidad.py",
         [
-            "m4_capacidad_dem.onnx",
-            "m4_capacidad_viv.onnx",
-            "m4_capacidad_ser.onnx",
-            "m4_capacidad_acc.onnx",
-            "m4_capacidad_emp.onnx",
+            "m2_capacidad_dem.onnx",
+            "m2_capacidad_viv.onnx",
+            "m2_capacidad_ser.onnx",
+            "m2_capacidad_acc.onnx",
+            "m2_capacidad_emp.onnx",
         ],
     ),
-    ("run_m6_mapa.py", ["m6_valor.onnx"]),
+    ("run_m3_valor.py", ["m3_valor.onnx"]),
+    (
+        "run_m4_stocks.py",
+        [
+            "m4_viviendas.onnx",
+            "m4_salud.onnx",
+            "m4_paradas.onnx",
+            "m4_escuelas.onnx",
+        ],
+    ),
 ]
 
 

@@ -1,6 +1,6 @@
 """Carga del único dataset de entrada del proyecto.
 
-Todo dato usado por M3 y M4 proviene de:
+Todo dato usado por M1 y M2 proviene de:
     data/dataset_155_municipios_2010-2025.xlsx
 o de rutas del propio repositorio. Nada más.
 """

@@ -6,7 +6,7 @@ con menos de 50.000 habitantes**, desplegado dentro de la aplicación APEX
 
 **La única interacción:** el usuario elige municipio + año + parámetros de
 choque (habitantes, viviendas, centros de salud, escuelas, paradas) → pulsa
-"Simular escenario" → los modelos **M3** (demografía) y **M4** (capacidad)
+"Simular escenario" → los modelos **M1** (demografía), **M2** (capacidad), **M3** (valor) y **M4** (stocks proyectados)
 se ejecutan como ONNX **dentro de Oracle** → se pintan las métricas simuladas
 (barras antes/después, semáforo, factor limitante). La simulación es
 **efímera**: no se persiste en ninguna tabla.
@@ -17,9 +17,11 @@ se ejecutan como ONNX **dentro de Oracle** → se pintan las métricas simuladas
 ## Reproducir los modelos
 
 ```bash
-python scripts/run_m3_demografia.py   # → oracle_db/models/m3_demografia.onnx + ficha
-python scripts/run_m4_capacidad.py    # → oracle_db/models/m4_capacidad_{dem,viv,ser,acc,emp}.onnx + ficha
-python scripts/run_all.py             # los dos, en orden, y comprueba las salidas
+python scripts/run_m1_demografia.py   # → oracle_db/models/m1_demografia.onnx + ficha
+python scripts/run_m2_capacidad.py    # → oracle_db/models/m2_capacidad_{dem,viv,ser,acc,emp}.onnx + ficha
+python scripts/run_m3_valor.py         # → oracle_db/models/m3_valor.onnx + ficha
+python scripts/run_m4_stocks.py       # → oracle_db/models/m4_{viviendas,salud,paradas,escuelas}.onnx + fichas
+python scripts/run_all.py             # los cuatro, en orden, y comprueba las 11 salidas
 ```
 
 Requisitos: Python con `pandas`, `scikit-learn`, `skl2onnx`, `onnx`,
@@ -32,8 +34,8 @@ Requisitos: Python con `pandas`, `scikit-learn`, `skl2onnx`, `onnx`,
 |---|---|
 | `data/` | Único dataset de entrada (xlsx, 155 municipios × 2010-2025). **Tronco.** |
 | `doc/` | Documentación maestra, fichas de modelos y legacy |
-| `scripts/` | Ejecutables del pipeline: `run_m3_…`, `run_m4_…`, `run_all.py` |
-| `src/` | Código Python: `common/`, `m3_demografia/`, `m4_capacidad/`, `m6_mapa/` (residual) y `deprecated/` (solo referencia) |
+| `scripts/` | Ejecutables del pipeline: `run_m1_…`, `run_m2_…`, `run_m3_…`, `run_m4_…`, `run_all.py` |
+| `src/` | Código Python: `common/`, `m1_demografia/` (M1), `m2_capacidad/` (M2), `m3_valor/` (M3, ant. M6) y `m4_stocks/` (M4, ant. M7); `deprecated/` solo referencia |
 | `oracle_db/` | `models/` (ONNX + fichas) y `sql/` (estado base + `PV_SIMULA`, `PV_MAPA`, `PV_GEO_MUNIS`) |
 | `mcp/` | Loaders del tronco hacia Oracle (estado base + carga ONNX) |
 | `web/` | **Visor**: todo lo exclusivo de la app APEX 215 — front del Simulador/Mapa, exports e `backups/` con `sql_original.sql`. No es necesario para reproducir el tronco. |
@@ -48,7 +50,7 @@ Requisitos: Python con `pandas`, `scikit-learn`, `skl2onnx`, `onnx`,
 ## Documentación
 
 - **`doc/project_context.md`** — documento maestro: definición, decisión de
-  modelos (M3 y M4 en ONNX; M1/M2/M5 fuera), arquitectura N1→N3 y criterios
+  modelos M1-M4 (ver `doc/models.md`), arquitectura N1→N3 y criterios
   de éxito.
 - **`doc/estructura.md`** — inventario del repositorio fichero a fichero.
 - `doc/modelos/` — fichas técnicas de M3 y M4 (copia para el jurado).

@@ -1,17 +1,17 @@
 """Genera y carga en Oracle la tabla de ESTADO BASE (corte 2025) que alimenta
-PV_SIMULA v2: los features EXACTOS que consumen M3 y M4, calculados con el
+PV_SIMULA v2: los features EXACTOS que consumen M1 y M2, calculados con el
 mismo código del entrenamiento (paridad garantizada Python/SQL).
 
-  - Genera:  oracle_db/sql/01_estado_base_m3_m4.sql   (DDL + INSERTs, referencia)
+  - Genera:  oracle_db/sql/01_estado_base.sql   (DDL + INSERTs, referencia)
   - Ejecuta: DDL + INSERTs en la base (conexión local por wallet)
 
-Columnas de PV_BASE_M3_M4:
+Columnas de PV_BASE_MODELOS:
   cod_ine, nombre, poblacion_2025,
-  -- M3 (estado del año base 2025; el horizonte lo decide la consulta):
+  -- M1 (estado del año base 2025; el horizonte lo decide la consulta):
   log_pob, cagr_1, cagr_3, cagr_5, cagr_10, vol_5,
   edad_media, pct_menor_15, pct_65mas, reemplazamiento, paro_100, var_paro,
   migracion_3y, distancia_sol_km, tiempo_centro,
-  -- M4 (ingredientes del estado; los ratios los forma PV_SIMULA al aplicar
+  -- M2 (ingredientes del estado; los ratios los forma PV_SIMULA al aplicar
   -- el choque del usuario y normalizar por población simulada):
   crec_10y_base (CAGR real ventana-invertida hasta 2025),
   centros_salud_num (centros + consultorios), consul...,
@@ -31,12 +31,13 @@ import numpy as np
 
 from src.common.dataset import cargar_panel, cargar_municipios
 from src.common.oracle import conectar
-from src.m4_capacidad.features import _estatica  # regla de imputación idéntica
+from src.m2_capacidad.features import _estatica  # regla de imputación idéntica
+from src.m4_stocks.features import features_despliegue_series  # features M4 (stocks)
 
-SQL_OUT = REPO / "oracle_db" / "sql" / "01_estado_base_m3_m4.sql"
+SQL_OUT = REPO / "oracle_db" / "sql" / "01_estado_base.sql"
 
 DDL = """
-CREATE TABLE PV_BASE_M3_M4 (
+CREATE TABLE PV_BASE_MODELOS (
     COD_INE            VARCHAR2(5) NOT NULL PRIMARY KEY,
     NOMBRE             VARCHAR2(120),
     LAT                NUMBER,
@@ -69,7 +70,38 @@ CREATE TABLE PV_BASE_M3_M4 (
     VCAGR_3            NUMBER,
     VCAGR_5            NUMBER,
     VCAGR_10           NUMBER,
-    VVOL_5             NUMBER
+    VVOL_5             NUMBER,
+    -- M4 (features de despliegue de los stocks proyectados; log_st = log1p)
+    VIV_LOG_POB        NUMBER,
+    VIV_LOG_ST         NUMBER,
+    VIV_CAGR_1         NUMBER,
+    VIV_CAGR_3         NUMBER,
+    VIV_CAGR_5         NUMBER,
+    VIV_CAGR_10        NUMBER,
+    VIV_VOL_5          NUMBER,
+    VIV_P1000          NUMBER,
+    VIV_POB_CAGR_5     NUMBER,
+    VIV_T_DEPLOY       NUMBER,
+    SAL_LOG_POB        NUMBER,
+    SAL_LOG_ST         NUMBER,
+    SAL_CAGR_1         NUMBER,
+    SAL_CAGR_3         NUMBER,
+    SAL_CAGR_5         NUMBER,
+    SAL_CAGR_10        NUMBER,
+    SAL_VOL_5          NUMBER,
+    SAL_P1000          NUMBER,
+    SAL_POB_CAGR_5     NUMBER,
+    SAL_T_DEPLOY       NUMBER,
+    PAR_LOG_POB        NUMBER,
+    PAR_LOG_ST         NUMBER,
+    PAR_CAGR_1         NUMBER,
+    PAR_CAGR_3         NUMBER,
+    PAR_CAGR_5         NUMBER,
+    PAR_CAGR_10        NUMBER,
+    PAR_VOL_5          NUMBER,
+    PAR_P1000          NUMBER,
+    PAR_POB_CAGR_5     NUMBER,
+    PAR_T_DEPLOY       NUMBER
 )
 """
 
@@ -80,6 +112,7 @@ def main(ejecutar: bool = True) -> None:
 
     estatica, imp = _estatica(municipios)
     estatica = estatica.set_index("cod_ine")
+    m4 = features_despliegue_series(panel).set_index("cod_ine")
 
     serie = (
         panel.pivot(index="cod_ine", columns="anio", values="poblacion_total")
@@ -122,16 +155,15 @@ def main(ejecutar: bool = True) -> None:
         migr = migr_serie.tail(3).mean()
         vol = crec.loc[2021:2025].std(ddof=1)
 
-        # ── Valor catastral (serie completa 2010-2025): features de M6 ──
+        # ── Valor catastral (serie completa 2010-2025): features de M3 ──
         v = panel.pivot(index="cod_ine", columns="anio", values="valor_catastral_residencial_miles_eur").loc[cod]
         gv = v.pct_change()
         valor25 = float(v[2025])
 
         mun_row = municipios[municipios["cod_ine"] == cod].iloc[0]
 
-        filas.append(
-            {
-                "cod_ine": cod,
+        fila = {
+            "cod_ine": cod,
                 "nombre": str(f["municipio"]),
                 "lat": float(mun_row["centroide_lat"]),
                 "lon": float(mun_row["centroide_lon"]),
@@ -164,8 +196,14 @@ def main(ejecutar: bool = True) -> None:
                 "vcagr_5": float((valor25 / v[2020]) ** (1 / 5) - 1),
                 "vcagr_10": float((valor25 / v[2015]) ** (1 / 10) - 1),
                 "vvol_5": float(gv.loc[2021:2025].std(ddof=1)) if gv.loc[2021:2025].std(ddof=1) == gv.loc[2021:2025].std(ddof=1) else None,
-            }
-        )
+        }
+        # ── M4 · features de despliegue de los stocks (viv/sal/par, prefijos) ──
+        if cod in m4.index:
+            fila.update({
+                k.lower(): (None if (isinstance(v, float) and v != v) else v)
+                for k, v in m4.loc[cod].items()
+            })
+        filas.append(fila)
 
     COLS = [k for k in filas[0]]
 
@@ -177,7 +215,7 @@ def main(ejecutar: bool = True) -> None:
             else "'" + str(v).replace("'", "''") + "'"
             for k, v in f_.items()
         )
-        lineas.append(f"INSERT INTO PV_BASE_M3_M4 ({', '.join(COLS)}) VALUES ({vals});")
+        lineas.append(f"INSERT INTO PV_BASE_MODELOS ({', '.join(COLS)}) VALUES ({vals});")
     SQL_OUT.parent.mkdir(parents=True, exist_ok=True)
     SQL_OUT.write_text("\n".join(lineas) + "\nCOMMIT;\n", encoding="utf-8")
 
@@ -189,7 +227,7 @@ def main(ejecutar: bool = True) -> None:
     conn = conectar()
     with conn.cursor() as cur:
         try:
-            cur.execute("DROP TABLE PV_BASE_M3_M4 PURGE")
+            cur.execute("DROP TABLE PV_BASE_MODELOS PURGE")
         except Exception:
             pass
         cur.execute(DDL)
@@ -202,12 +240,12 @@ def main(ejecutar: bool = True) -> None:
                 b["c_" + k] = v
             bind.append(b)
         cur.executemany(
-            "INSERT INTO PV_BASE_M3_M4 (" + ", ".join(COLS) + ") VALUES ("
+            "INSERT INTO PV_BASE_MODELOS (" + ", ".join(COLS) + ") VALUES ("
             + ", ".join(":c_" + c for c in COLS) + ")",
             bind,
         )
         conn.commit()
-    print(f"[base] PV_BASE_M3_M4 cargada: {len(filas)} municipios | imputación tiempo: {imp['n_imputados']} municipios")
+    print(f"[base] PV_BASE_MODELOS cargada: {len(filas)} municipios | imputación tiempo: {imp['n_imputados']} municipios")
 
 
 if __name__ == "__main__":

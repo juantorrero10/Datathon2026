@@ -20,7 +20,7 @@ UMBRAL_ICA_MEDIA = 60.0                  # 40.0 - 59.9: Capacidad Media / Requie
 # Criterio Municipio de 30 minutos (Movilidad y Transporte)
 TIEMPO_MAXIMO_POLO_EMPLEO_MIN = 30       # Isócrona de acceso a hospitales o nodos metropolitanos
 
-# Escenarios de estrés demográfico (Modelo M3)
+# Escenarios de estrés demográfico (Modelo M1)
 ESCENARIO_ESTRES_MODERADO_PCT = 5.0      # +5% de población proyectada
 ESCENARIO_ESTRES_SEVERO_PCT = 10.0       # +10% de población proyectada
 

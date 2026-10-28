@@ -34,7 +34,7 @@ from src.lodcore.config.perfiles import (
     presupuesto_efectivo_m2,
     variantes_pesos,
 )
-from src.lodcore.models.m4_capacidad.reglas_no_compensatorias import (
+from src.lodcore.models.m2_capacidad.reglas_no_compensatorias import (
     aplicar_salvaguarda_no_compensatoria,
 )
 from src.lodcore.explain.redaccion_natural import verificar_ausencia_causalidad
@@ -71,7 +71,7 @@ def afinidad_ponderada(scores: Dict[str, float], pesos: Dict[str, float]) -> flo
 
 
 def _riesgo_futuro(fila: Dict[str, Any]) -> Dict[str, Any]:
-    """Riesgo demografico ya calculado en el panel (M3). No se recalcula aqui."""
+    """Riesgo demografico ya calculado en el panel (M1). No se recalcula aqui."""
     return {
         "poblacion_2031": fila.get("poblacion_2031"),
         "anio_estimado_saturacion": fila.get("anio_estimado_saturacion"),
