@@ -1,4 +1,4 @@
-"""Genera oracle_db/backups/simulador.sql a partir de oracle_db/backups/sql_original.sql.
+"""Genera web/backups/simulador.sql a partir de web/backups/sql_original.sql.
 
 Operaciones sobre el texto del export, cada una con marcador único:
   1. workspace id del import: 9407325500210183 -> 9407325500210184 (el real).
@@ -20,9 +20,9 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
-from mcp.editar_export_contenido import FRONT, SIMULAR_SRC, STUB20_LINES  # noqa: E402
+from web.editar_export_contenido import FRONT, SIMULAR_SRC, STUB20_LINES  # noqa: E402
 
-DIR_EXP = REPO / "oracle_db" / "backups"
+DIR_EXP = REPO / "web" / "backups"
 ORIG = DIR_EXP / "sql_original.sql"
 DEST = DIR_EXP / "simulador.sql"
 

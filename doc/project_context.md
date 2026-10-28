@@ -26,6 +26,12 @@ El usuario elige municipio + año + parámetros de choque
 La salida de la simulación es **efímera**: no se guarda en ninguna tabla. Si
 el usuario recarga, el escenario desaparece (volvió el mapa original).
 
+**Qué es el tronco del proyecto:** los **modelos y el análisis de datos**
+(`data/` → `scripts/run_*.py` → `oracle_db/models/` + sus fichas JSON) y su
+carga a Oracle (`mcp/`). La página APEX 215 es el **visor** de esos modelos:
+todo lo que existe solo para ella (front, exports, polígonos del mapa, backups
+de la app) vive aislado en `web/` y no es necesario para reproducir el tronco.
+
 **Pregunta que responde el simulador:**
 > Si este municipio gana N habitantes y hacemos X inversión/en ampliaciones,
 > ¿cómo queda su índice vitalidad para el año Y? ¿Y qué se rompe primero?
@@ -58,10 +64,12 @@ Espectro de decisión (hay 2 modelos ONNX en `oracle_db/models`):
 | **M1 · AVM (precio vivienda)** | ❌ No | El negocio del simulador no es comprar piso; los precios quedan como valor estático del mapa. Además sus métricas son las más débiles del proyecto (imposible ajustar bien el precio con esta muestra y con target unitario) |
 | **M2 · Indicadores (PCA)** | ❌ No | Era un motor para los sub-índices calibrados del borrador antiguo. Las 5 dimensiones viven ahora (en el índice) como rangos percentiles calcados en SQL; el PCA no modela nada nuevo sobre este estado |
 | **M5 · Recomendador / ranking** | ❌ No | El ranking de los 155 municipios ya es una vista del mapa (columna `indice`), altamente interpretable y probada. **El simulador no ordena municipios; simula un municipio**. Una recomendación y un ranking son cosas distintas (ver §4 del legacy) |
+| **M6 · Valor catastral (AVM)** | ⚠️ **Residual** | Está presente (`src/m6_mapa/`, `m6_valor.onnx` y `PV_MAPA` lo consume para proyectar el valor), pero quedó **fuera del árbol de decisión** de este doc (M1 descartado). Decisión pendiente: retirarlo y dejar el valor estático, o documentarlo plenamente. No durante esta reorganización. |
 
 Filosofía: **una dimension, un modelo, un fichero .onnx** (M4 baja a la
 base como 5 ficheros, uno por dimensión). Resultado simple: dos pipelines
-Python → seis .onnx → cargados en Oracle.
+Python (M3, M4) → seis .onnx → cargados en Oracle. El M6 residual añade un
+tercer pipeline (`src/m6_mapa/`) y `m6_valor.onnx` — ver su fila en la tabla.
 
 ---
 
@@ -111,19 +119,29 @@ cambia con el año ni con el perfil (no hay perfiles ya).
 Datathon2026/
 ├── README.md                                   ← portada del proyecto
 ├── data/
-│   └── dataset_155_municipios_2010-2025.xlsx   ← único dataset de entrada
+│   └── dataset_155_municipios_2010-2025.xlsx   ← único dataset de entrada (TRONCO)
 ├── doc/
 │   ├── project_context.md                      ← ESTE documento
 │   ├── estructura.md                           ← inventario fichero a fichero
 │   ├── legacy/                                 ← borrador anterior (referencia)
 │   └── modelos/                                ← fichas de M3 y M4 (para el jurado)
-├── mcp/                                        ← infraestructura del asistente (Oracle/APEX)
+├── mcp/                                        ← loaders del tronco hacia Oracle
+│   ├── generar_estado_base.py                  ← PV_BASE_M3_M4 (estado base)
+│   └── cargar_onnx.py                          ← sube los .onnx a la base
+├── web/                                        ← VISOR: todo lo exclusivo de la app APEX 215
+│   ├── geo_municipios_madrid.geojson           ← polígonos de los 155 (mapa)
+│   ├── limite_madrid.json                      ← límite de la CM (front del mapa)
+│   ├── descargar_geojson.py / completar_geojson.py  ← pipeline geo Overpass → PV_GEO_MUNIS
+│   ├── front_mapa.py / actualizar_front_mapa.py / anadir_pagina_mapa.py
+│   ├── aplicar_front_simulador.py / editar_export_simulador.py / editar_export_contenido.py
+│   ├── importar_export.py                      ← reimport de la app
+│   └── backups/                                ← exports de la app (sql_original.sql = punto de restauración)
 ├── oracle_db/
 │   ├── models/                                 ← SALIDA: .onnx + fichas
 │   │   ├── m3_demografia.onnx
 │   │   └── m4_capacidad_{dem,viv,ser,acc,emp}.onnx
-│   ├── sql/                                    ← estado base + PV_SIMULA v2
-│   └── backups/                                ← exports SQL de la app 215
+│   ├── sql/                                    ← estado base + PV_SIMULA + PV_MAPA/PV_GEO
+│   └── (los exports de la app viven ahora en web/backups/)
 ├── scripts/
 │   ├── run_m3_demografia.py                    ← ejecuta TODO el pipeline M3
 │   ├── run_m4_capacidad.py                     ← ejecuta TODO el pipeline M4
@@ -132,7 +150,9 @@ Datathon2026/
 │   ├── common/                                 ← carga del xlsx + rutas + Oracle
 │   ├── m3_demografia/                          ← features + train + export ONNX
 │   ├── m4_capacidad/                           ← features + train + export ONNX
+│   ├── m6_mapa/                                ← M6 residual (AVM valor catastral)
 │   └── deprecated/                             ← código antiguo, solo referencia
+├── visuals/                                    ← PNGs y diagramas del análisis
 ├── tests/                                      ← reservada para pytest (hoy vacía)
 └── wallet/                                     ← credenciales Oracle (no versionado)
 ```
@@ -210,6 +230,29 @@ Si alguno de los 3 se cumple → funcionamos. Si todos → proyecto redondo.
 
 ## 10. Registro de mantenimiento
 
+- **28-oct-2026 · reorganización tronco vs. visor + pipeline geo** (dos cosas
+  en una):
+  1. *Carpeta `web/`:* todo lo exclusivo de la página APEX 215 vive ahora en
+     `web/` (front del Simulador y del Mapa, export/import de la app,
+     `geo_municipios_madrid.geojson`, `limite_madrid.json` y los exports
+     movidos de `oracle_db/backups/` a `web/backups/`). `mcp/` queda reducida
+     a los loaders del tronco (`generar_estado_base.py`, `cargar_onnx.py`).
+     El `data/` queda solo con el xlsx del tronco. El dump crudo de Overpass
+     (`web/osm_raw_cm.json`) es caché local NO versionada (`.gitignore`).
+  2. *Pipeline geo de OSM:* reescrito el ensamblado de polígonos por
+     **id de nodo** con crecimiento bidireccional y división de "ochos", tras
+     diagnosticar (a) que `PV_GEO_MUNIS` estaba vacía y (b) el bug histórico
+     del ensamblador (`list(reversed(t))[:-1]`, que metía los tramos
+     invertidos comiéndose el punto compartido y rompiendo los anillos con
+     saltos de kilómetros). Resultado: 155/155 features válidas (147 Polygon,
+     8 MultiPolygon de exclaves reales), 244 KB, cargadas en Oracle.
+     Falsos de validación corregidos: los saltos de ensamblaje se miden sobre
+     el dato crudo (antes de Douglas-Peucker) porque los lados rectos largos
+     y reales de los límites se comprimen a un segmento.
+  3. *M6 documentado como residual* (fila ⚠️ en §3): presente en `src/m6_mapa/`
+     y `oracle_db/models/m6_valor.onnx`, consumido por `PV_MAPA`, pero fuera
+     del árbol de decisión del doc maestro. Decisión de retiro/conservación
+     pendiente.
 - **28-oct-2026 · limpieza del repositorio** (sin cambios de funcionalidad):
   eliminadas todas las carpetas `__pycache__/` (incluida la huérfana de
   `m6_proyeccion`); `.gitignore` reorganizado por secciones (`+.idea/`;

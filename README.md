@@ -30,14 +30,20 @@ Requisitos: Python con `pandas`, `scikit-learn`, `skl2onnx`, `onnx`,
 
 | Carpeta | Qué contiene |
 |---|---|
-| `data/` | Único dataset de entrada (xlsx, 155 municipios × 2010-2025) |
+| `data/` | Único dataset de entrada (xlsx, 155 municipios × 2010-2025). **Tronco.** |
 | `doc/` | Documentación maestra, fichas de modelos y legacy |
 | `scripts/` | Ejecutables del pipeline: `run_m3_…`, `run_m4_…`, `run_all.py` |
-| `src/` | Código Python: `common/`, `m3_demografia/`, `m4_capacidad/` y `deprecated/` (solo referencia) |
-| `oracle_db/` | `models/` (ONNX + fichas), `sql/` (estado base + `PV_SIMULA` v2) y `backups/` (exports SQL de la app 215) |
-| `mcp/` | Infraestructura del asistente (gestión Oracle/APEX); **no** forma parte del pipeline |
+| `src/` | Código Python: `common/`, `m3_demografia/`, `m4_capacidad/`, `m6_mapa/` (residual) y `deprecated/` (solo referencia) |
+| `oracle_db/` | `models/` (ONNX + fichas) y `sql/` (estado base + `PV_SIMULA`, `PV_MAPA`, `PV_GEO_MUNIS`) |
+| `mcp/` | Loaders del tronco hacia Oracle (estado base + carga ONNX) |
+| `web/` | **Visor**: todo lo exclusivo de la app APEX 215 — front del Simulador/Mapa, exports e `backups/` con `sql_original.sql`. No es necesario para reproducir el tronco. |
+| `visuals/` | PNGs y diagramas del análisis (mapas de calor, rankings, arquitectura) |
 | `tests/` | Reservada para tests (pytest); hoy vacía |
 | `wallet/` | Wallet de Oracle con credenciales (local, no versionado) |
+
+> La pieza principal del proyecto son los modelos y el análisis de datos
+> (`data/`, `src/`, `scripts/`, `oracle_db/`, `mcp/`). La carpeta `web/` es
+> la capa de presentación (app APEX).
 
 ## Documentación
 
@@ -50,9 +56,10 @@ Requisitos: Python con `pandas`, `scikit-learn`, `skl2onnx`, `onnx`,
 
 ## Convenciones clave
 
-1. Cadena oficial: `data/*.xlsx` → `scripts/run_*.py` → `oracle_db/models/*.onnx`
-   → Oracle → `PV_SIMULA` → APEX (pág. 10).
+1. Cadena oficial del tronco: `data/*.xlsx` → `scripts/run_*.py` →
+   `oracle_db/models/*.onnx` → Oracle → `PV_SIMULA`/`PV_MAPA` → APEX.
 2. Sin ficha JSON (`doc/modelos/…`) no se sube un modelo a Oracle.
 3. La simulación es efímera: nada se persiste.
-4. `oracle_db/backups/sql_original.sql` es el punto de restauración de la
+4. `web/backups/sql_original.sql` es el punto de restauración de la
    app 215: no se sobreescribe.
+5. La caché del geo (`web/osm_raw_cm.json`) no va versionada.

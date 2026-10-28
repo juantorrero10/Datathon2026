@@ -3,12 +3,12 @@
 1. Conexión ADMIN: elimina la app 215 si existe (el import exige que no exista).
 2. Conexión como parsing schema (WKSP_DATATHON, credenciales en .env con
    APEX_IMPORT_USER/APEX_IMPORT_PASS): ejecuta el export modificado
-   (oracle_db/backups/simulador.sql) con p_default_workspace_id=>NULL, que es la
+   (web/backups/simulador.sql) con p_default_workspace_id=>NULL, que es la
    única variante que ha funcionado en este Autonomous (el 0183/0184 del export
    provocan ORA-02291 / ORA-20987).
 
 Uso:  python mcp/importar_export.py [ruta_del_f_sql]
-      (por defecto: oracle_db/backups/simulador.sql)
+      (por defecto: web/backups/simulador.sql)
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 from src.common.oracle import conectar  # noqa: E402
 
-DEFAULT = REPO / "oracle_db" / "backups" / "simulador.sql"
+DEFAULT = REPO / "web" / "backups" / "simulador.sql"
 SQLPLUS = re.compile(r"^\s*(set|whenever|prompt|col|skip)\b", re.I)
 WORKSPACE = 9407325500210184
 APP_ID = 215

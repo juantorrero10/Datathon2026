@@ -2,7 +2,7 @@
 
 Difiere de editar_export_simulador.py: el usuario edita la app en el builder,
 así que aquí el baseline es el export del estado VIVO (se guarda con fecha en
-oracle_db/backups/) y la única mutación es sustituir la fuente de la región de
+web/backups/) y la única mutación es sustituir la fuente de la región de
 la pág. 10 por el front nuevo (mismo formato del usuario: BEGIN + HTP.P q'~...~').
 
 Uso:  python mcp/aplicar_front_simulador.py
@@ -17,11 +17,11 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
-from mcp.editar_export_contenido import CABECERA_CSS, FRONT_V3  # noqa: E402
-from mcp.importar_export import sentencias  # noqa: E402
+from web.editar_export_contenido import CABECERA_CSS, FRONT_V3  # noqa: E402
+from web.importar_export import sentencias  # noqa: E402
 from src.common.oracle import conectar  # noqa: E402
 
-BACKUPS = REPO / "oracle_db" / "backups"
+BACKUPS = REPO / "web" / "backups"
 APP_ID = 215
 WORKSPACE = 9407325500210184
 

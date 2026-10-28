@@ -1,4 +1,6 @@
 -- 05_pv_geo_munis — polígonos municipales para el mapa (fuente: OSM vía Overpass API,
--- simplificados con Douglas-Peucker eps=0.0004°, coords redondeadas a 5 decimales).
--- La carga se hace con binds desde mcp/descargar_geojson.py (los CLOB son grandes).
+-- ensamblados POR ID DE NODO con crecimiento bidireccional, simplificados con
+-- Douglas-Peucker eps=0.0004°, coords a 5 decimales). Dump crudo reproducible en
+-- web/osm_raw_cm.json (caché local, no versionada; FORCE_RELOAD=1 para re-descargar).
+-- La carga se hace con binds desde web/descargar_geojson.py (los CLOB son grandes).
 -- Verificar: SELECT COUNT(*) FROM PV_GEO_MUNIS;  -- = 155

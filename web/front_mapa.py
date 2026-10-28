@@ -27,7 +27,7 @@ CABECERA_MAPA = (
     "</style>"
 )
 
-LIMITE = Path(__file__).resolve().parents[1] / "data" / "limite_madrid.json"
+LIMITE = Path(__file__).resolve().parents[1] / "web" / "limite_madrid.json"
 LIMITE_JSON = LIMITE.read_text(encoding="utf-8")
 
 FRONT_MAPA = r"""<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -52,7 +52,7 @@ FRONT_MAPA = r"""<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/di
 .mv #mvOverlay .spin{width:26px;height:26px;border-radius:50%;border:3px solid #cbd5e1;border-top-color:#0f766e;animation:mvspin .9s linear infinite}
 @keyframes mvspin{to{transform:rotate(360deg)}}
 .mv .grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;align-items:start}
-.mv #mvMap{height:640px;background:#eef3f7;border-radius:10px;z-index:1}
+.mv #mvMap{height:640px;background:#d3d8dc;border-radius:10px;z-index:1}
 .mv .side{background:#fff;border:1px solid #dbe3ea;border-radius:12px;padding:12px;margin-bottom:12px}
 .mv .side h4{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#5b6b7c;margin:0 0 10px}
 .mv .capa{display:block;font-size:12.5px;font-weight:600;color:#334155;margin:6px 0;cursor:pointer}
@@ -103,9 +103,7 @@ FRONT_MAPA = r"""<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/di
    <div class="grid">
     <div style="position:relative"><div id="mvMap"></div>
      <div class="pills">
-      <button type="button" class="mv-pill on" data-tile="ign">IGN</button>
-      <button type="button" class="mv-pill" data-tile="street">Callejero</button>
-      <button type="button" class="mv-pill" data-tile="sat">Sat&eacute;lite</button>
+      <button type="button" id="mvSw" class="mv-pill" title="Alternar vista sat&eacute;lite / fondo plano">Sat&eacute;lite</button>
      </div>
     </div>
     <div class="lc-side">
@@ -236,15 +234,16 @@ function boot(){
   MAP=L.map("mvMap",{center:[40.55,-3.65],zoom:9,minZoom:8,maxZoom:13,zoomControl:false});
   L.control.zoom({position:"bottomright"}).addTo(MAP);
   MAP.on("click",function(){SEL=null;cerrarTarjeta();});
+  // Fondo: gris plano por defecto; el interruptor "Satélite" alterna la capa satelital
   var TILES={
-   ign:{url:"https://www.ign.es/wmts/ign-base?service=WMTS&request=GetTile&version=1.0.0&Format=image/png&layer=IGNBaseTodo&style=default&tilematrixset=GoogleMapsCompatible&TileMatrix={z}&TileRow={y}&TileCol={x}",opt:{maxZoom:18,attribution:"\u00A9 IGN Espa\u00F1a / CNIG"}},
-   street:{url:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",opt:{maxZoom:18,attribution:"Tiles \u00A9 Esri"}},
    sat:{url:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",opt:{maxZoom:19,attribution:"Tiles \u00A9 Esri, Maxar"}}
   };
-  function setTile(k){if(TILE)MAP.removeLayer(TILE);TILE=L.tileLayer(TILES[k].url,TILES[k].opt).addTo(MAP);TILE.bringToBack();
-   Array.prototype.forEach.call(document.querySelectorAll(".mv-pill"),function(b){b.classList.toggle("on",b.getAttribute("data-tile")===k);});}
-  Array.prototype.forEach.call(document.querySelectorAll(".mv-pill"),function(b){b.addEventListener("click",function(){setTile(b.getAttribute("data-tile"));});});
-  setTile("ign");
+  function setTile(k){
+   if(TILE){MAP.removeLayer(TILE);TILE=null;}
+   if(k&&TILES[k]){TILE=L.tileLayer(TILES[k].url,TILES[k].opt).addTo(MAP);TILE.bringToBack();}
+   var b=$("mvSw");if(b)b.classList.toggle("on",!!TILE);
+  }
+  var bsw=$("mvSw");if(bsw)bsw.addEventListener("click",function(){setTile(TILE?null:"sat");});
   L.geoJSON(window.__MV_LIMITE,{style:{color:"#0078A8",weight:2,dashArray:"3, 4",fillColor:"#0078A8",fillOpacity:0.04},interactive:false}).addTo(MAP);
   suelto=L.layerGroup().addTo(MAP);
   $("mvCapas").innerHTML=CAPAS.map(function(c){return "<label class=\"capa"+(c.k===CAPA?" on":"")+"\"><input type=\"radio\" name=\"mvcapa\" value=\""+c.k+"\""+(c.k===CAPA?" checked":"")+">"+esc(c.label)+"</label>";}).join("");

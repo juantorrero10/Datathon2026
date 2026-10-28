@@ -14,7 +14,7 @@ sys.path.insert(0, str(REPO))
 from dotenv import load_dotenv
 load_dotenv(r'C:\Users\juan\apex-mcp\.env', override=True)
 import os  # noqa: E402
-from mcp.front_mapa import CABECERA_MAPA, FRONT_MAPA  # noqa: E402
+from web.front_mapa import CABECERA_MAPA, FRONT_MAPA  # noqa: E402
 from src.common.oracle import conectar  # noqa: E402
 
 APP_ID = 215
@@ -74,7 +74,7 @@ def main() -> None:
     i_cg = texto.rfind("\n", 0, i_cg) + 1
     i_fg = texto.index(",p_process_clob_language=>", i_cg)
     i_fg = texto.rfind("\n", 0, i_fg) + 1
-    from mcp.anadir_pagina_mapa import GEO_SRC, attr_proceso, PRED_SRC
+    from web.anadir_pagina_mapa import GEO_SRC, attr_proceso, PRED_SRC
     texto = texto[:i_cg] + attr_proceso(GEO_SRC) + "\n" + texto[i_fg:]
 
     i_pred = texto.index("p_process_name=>'PRED'")
@@ -85,10 +85,15 @@ def main() -> None:
     texto = texto[:i_cp] + attr_proceso(PRED_SRC) + "\n" + texto[i_fp:]
     print(f"[upd] región pág. 40 actualizada ({len(texto):,} chars)")
 
+    # 2b) menú lateral compartido: 'Mapa' fuera de la barra y en su sitio
+    from web.menu_mapa import coloca_entrada_mapa
+    texto, detalle = coloca_entrada_mapa(texto)
+    print(f"[upd] menú: {detalle}")
+
     # 3) reimportar (borrar + importar)
     import re
     texto = re.sub(r"p_default_workspace_id=>\d+", "p_default_workspace_id=>NULL", texto, count=1)
-    from mcp.importar_export import sentencias
+    from web.importar_export import sentencias
     chunks = sentencias(texto)
 
     adm = conectar()

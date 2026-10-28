@@ -19,10 +19,10 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
-from mcp.front_mapa import CABECERA_MAPA, FRONT_MAPA  # noqa: E402
+from web.front_mapa import CABECERA_MAPA, FRONT_MAPA  # noqa: E402
 from src.common.oracle import conectar  # noqa: E402
 
-BACKUPS = REPO / "oracle_db" / "backups"
+BACKUPS = REPO / "web" / "backups"
 APP_ID = 215
 PAGE_ID = 40
 
@@ -187,23 +187,14 @@ def main() -> None:
     i30end = texto.rfind("\n", 0, i30end) + 1
     texto = texto[:i30end] + bloque40 + texto[i30end:]
 
-    # 5) menú: añadir entrada 'Mapa' (id nuevo, secuencia 30)
-    item = ("wwv_flow_imp_shared.create_list_item(\n"
-            " p_id=>wwv_flow_imp.id(8900550584000023)\n"
-            ",p_list_item_display_sequence=>30\n"
-            ",p_list_item_link_text=>'Mapa'\n"
-            ",p_static_id=>'mapa'\n"
-            ",p_list_item_link_target=>'f?p=&APP_ID.:40:&APP_SESSION.::&DEBUG.:::'\n"
-            ",p_list_item_icon=>'fa-map'\n"
-            ",p_list_item_current_type=>'TARGET_PAGE'\n"
-            ");\n")
-    ancla = texto.index("wwv_flow_imp_shared.create_list_item(")
-    texto = texto[:ancla] + item + texto[ancla:]
-    print("[mapa] entrada de menú 'Mapa' añadida")
+    # 5) menú: entrada 'Mapa' correcta (helper compartido)
+    from web.menu_mapa import coloca_entrada_mapa
+    texto, detalle = coloca_entrada_mapa(texto)
+    print(f"[mapa] menú: {detalle}")
 
     # 6) importar
     texto = re.sub(r"p_default_workspace_id=>\d+", "p_default_workspace_id=>NULL", texto, count=1)
-    from mcp.importar_export import sentencias
+    from web.importar_export import sentencias
     chunks = sentencias(texto)
 
     import os

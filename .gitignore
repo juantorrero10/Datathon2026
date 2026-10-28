@@ -6,6 +6,9 @@ wallet/
 # --- Config local del asistente (OpenCode/MCP) ---
 opencode.json
 
+# --- Caché de descargas OSM del visor (web/descargar_geojson.py) ---
+web/osm_raw_cm.json
+
 # --- Python ---
 __pycache__/
 *.py[cod]
