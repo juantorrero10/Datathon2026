@@ -19,6 +19,7 @@ import onnxruntime as ort
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
+from src.common.dataset import cargar_municipios, cargar_panel  # noqa: E402
 from src.common.oracle import conectar  # noqa: E402
 
 DIR = REPO / "oracle_db" / "models"
@@ -27,13 +28,15 @@ FICHA_M4 = json.loads((DIR / "m4_capacidad.json").read_text(encoding="utf-8"))
 
 FEATS_M3 = FICHA_M3["features"]
 FEATS_M4 = FICHA_M4["features"]
+FICHA_M6 = json.loads((DIR / "m6_valor.json").read_text(encoding="utf-8"))
+FEATS_M6 = FICHA_M6["features"]
 
 SALIDAS_M4 = {k: v.upper() for k, v in FICHA_M4["modelos_oracle"].items()}
 
 MODELOS = []
-for nombre in ["M3_DEMOGRAFIA"] + list(SALIDAS_M4.values()):
-    mt = "m3" if nombre == "M3_DEMOGRAFIA" else "m4"
-    feats = FEATS_M3 if mt == "m3" else FEATS_M4
+for nombre in ["M3_DEMOGRAFIA"] + list(SALIDAS_M4.values()) + ["M6_VALOR"]:
+    mt = "m3" if nombre == "M3_DEMOGRAFIA" else ("m6" if nombre == "M6_VALOR" else "m4")
+    feats = FEATS_M3 if mt == "m3" else (FEATS_M6 if mt == "m6" else FEATS_M4)
     fichero = f"{nombre.lower()}.onnx"
     meta = json.dumps(
         {
@@ -120,6 +123,19 @@ def main() -> None:
         rt = float(sess.run(None, {sess.get_inputs()[0].name: np.array([[v4[f.upper()] for f in FEATS_M4]], dtype=np.float32)})[0].ravel()[0])
         print(f"[paridad {nombre}] db={db:.4f}  runtime={rt:.4f}  diff={abs(db - rt):.2e}")
         assert abs(db - rt) < 1e-5
+
+    # M6: vector real del dataset de entrenamiento (municipio 28001, t=2024, h=1)
+    from src.m6_mapa.features import construir_dataset_m6
+    d6 = construir_dataset_m6(cargar_panel(), cargar_municipios())
+    fila6 = d6[(d6["cod_ine"] == "28001") & (d6["anio_base"] == 2024) & (d6["horizonte"] == 1)].iloc[0]
+    v6 = {f.upper(): float(fila6[f]) for f in FEATS_M6}
+    usando6 = ", ".join(f":{k} AS {k}" for k in v6)
+    db6 = q(f"SELECT PREDICTION(M6_VALOR USING {usando6}) FROM dual", v6)[0][0]
+    db6 = float(db6)
+    sess6 = ort.InferenceSession(str(DIR / "m6_valor.onnx"), providers=["CPUExecutionProvider"])
+    rt6 = float(sess6.run(None, {sess6.get_inputs()[0].name: np.array([[v6[f.upper()] for f in FEATS_M6]], dtype=np.float32)})[0].ravel()[0])
+    print(f"[paridad M6_VALOR] log(factor)  db={db6:.6f}  runtime={rt6:.6f}  diff={abs(db6 - rt6):.2e}")
+    assert abs(db6 - rt6) < 1e-5
 
     print("[cargar] PARIDAD OK — lo que predice Oracle coincide con local")
 

@@ -39,6 +39,8 @@ DDL = """
 CREATE TABLE PV_BASE_M3_M4 (
     COD_INE            VARCHAR2(5) NOT NULL PRIMARY KEY,
     NOMBRE             VARCHAR2(120),
+    LAT                NUMBER,
+    LON                NUMBER,
     POBLACION_2025     NUMBER,
     LOG_POB            NUMBER,
     CAGR_1             NUMBER,
@@ -60,7 +62,14 @@ CREATE TABLE PV_BASE_M3_M4 (
     ESCUELAS           NUMBER,
     PARADAS_BASE       NUMBER,
     TELEFONO           NUMBER,
-    VIV_STOCK          NUMBER
+    VIV_STOCK          NUMBER,
+    VALOR_2025         NUMBER,
+    LOG_VALOR          NUMBER,
+    VCAGR_1            NUMBER,
+    VCAGR_3            NUMBER,
+    VCAGR_5            NUMBER,
+    VCAGR_10           NUMBER,
+    VVOL_5             NUMBER
 )
 """
 
@@ -113,10 +122,19 @@ def main(ejecutar: bool = True) -> None:
         migr = migr_serie.tail(3).mean()
         vol = crec.loc[2021:2025].std(ddof=1)
 
+        # ── Valor catastral (serie completa 2010-2025): features de M6 ──
+        v = panel.pivot(index="cod_ine", columns="anio", values="valor_catastral_residencial_miles_eur").loc[cod]
+        gv = v.pct_change()
+        valor25 = float(v[2025])
+
+        mun_row = municipios[municipios["cod_ine"] == cod].iloc[0]
+
         filas.append(
             {
                 "cod_ine": cod,
                 "nombre": str(f["municipio"]),
+                "lat": float(mun_row["centroide_lat"]),
+                "lon": float(mun_row["centroide_lon"]),
                 "poblacion_2025": pob25,
                 "log_pob": float(np.log(pob25)),
                 "cagr_1": cagr(1),
@@ -139,6 +157,13 @@ def main(ejecutar: bool = True) -> None:
                 "paradas_base": nz(fila_paradas["paradas_autobus"]) + nz(fila_paradas["estaciones_metro"]) + nz(fila_paradas["estaciones_cercanias"]),
                 "telefono": nz(fila_telefono["lineas_telefonicas_baf"]) + nz(fila_telefono["lineas_telefonicas_atf"]),
                 "viv_stock": nz(f["unidades_urbanas_residencial"]),
+                "valor_2025": valor25,
+                "log_valor": float(np.log(valor25)),
+                "vcagr_1": float(gv[2025]),
+                "vcagr_3": float((valor25 / v[2022]) ** (1 / 3) - 1),
+                "vcagr_5": float((valor25 / v[2020]) ** (1 / 5) - 1),
+                "vcagr_10": float((valor25 / v[2015]) ** (1 / 10) - 1),
+                "vvol_5": float(gv.loc[2021:2025].std(ddof=1)) if gv.loc[2021:2025].std(ddof=1) == gv.loc[2021:2025].std(ddof=1) else None,
             }
         )
 

@@ -13,7 +13,8 @@ REPO = Path(__file__).resolve().parents[1]
 SCRIPTS = REPO / "scripts"
 MODELOS = REPO / "oracle_db" / "models"
 
-# M3 deja un único .onnx; M4 baja a la base como 5 ficheros (uno por dimensión).
+# M3 deja un único .onnx; M4 baja a la base como 5 ficheros (uno por dimensión);
+# M6 (valor catastral proyectado, mapa) deja otro .onnx único.
 EXITOS = [
     ("run_m3_demografia.py", ["m3_demografia.onnx"]),
     (
@@ -26,6 +27,7 @@ EXITOS = [
             "m4_capacidad_emp.onnx",
         ],
     ),
+    ("run_m6_mapa.py", ["m6_valor.onnx"]),
 ]
 
 

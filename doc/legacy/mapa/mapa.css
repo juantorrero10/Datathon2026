@@ -1,0 +1,142 @@
+/* LoDCORE · Mapa de municipios — hoja de estilos (todo acotado a #lodcore)
+   Estética alineada con el Observatorio (mismos colores, radios, sombras y tipografías). */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+
+#lodcore {
+  /* Paleta y medidas de la aplicación */
+  --font-primary: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --madrid-red: #477edc; --madrid-red-dark: #295c84; --madrid-red-light: #FDF2F3; --madrid-red-border: #b5f2f7; --madrid-blue: #204655; --madrid-blue-light: #F0F7FB; --madrid-blue-dark: #00567A;
+  --text-main:#232323; --text-secondary:#4A5568; --text-muted:#718096;
+  --bg-page:#F8F9FA; --bg-subtle:#F1F3F5; --bg-tinted:#F4F6F8;
+  --border-main:#D9D9D9; --border-subtle:#E2E8F0; --border-dark:#A0AEC0;
+  --status-alta:#1B7A3C; --status-alta-bg:#E8F5EC;
+  --status-media:#B7791F; --status-media-bg:#FEF3C7;
+  --status-baja:#C8102E; --status-baja-bg:#FEE2E2;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.06); --shadow-card:0 2px 8px rgba(0,0,0,0.08); --shadow-hover:0 8px 20px rgba(0,0,0,0.12);
+  --radius-sm:4px; --radius-md:6px; --radius-lg:8px;
+
+  /* Alias que usan el JS y el HTML del mapa */
+  --bg:var(--bg-page); --card:#FFFFFF; --tx:var(--text-main); --mu:var(--text-muted); --bd:var(--border-main);
+  --ac:var(--madrid-red); --ac-hover:var(--madrid-red-dark); --ac-light:var(--madrid-red-light);
+  --success:var(--status-alta); --warning:var(--status-media); --danger:var(--status-baja);
+
+  --alto:560px;                       /* altura del mapa: cámbiala aquí */
+  font-family:var(--font-primary); font-size:14px; line-height:1.5;
+  color:var(--text-main); color-scheme:light; position:relative;
+}
+#lodcore *, #lodcore *::before, #lodcore *::after { box-sizing:border-box; }
+#lodcore [hidden] { display:none !important; }
+#lodcore button, #lodcore input, #lodcore select { font-family:inherit; }
+
+/* ---- Barra de filtros (como .filter-panel del Observatorio) ---- */
+#lodcore .lc-bar { display:flex; flex-wrap:wrap; gap:12px 16px; align-items:flex-end; background:#FFFFFF;
+  border:1px solid var(--border-main); border-radius:var(--radius-sm); padding:14px 18px; margin:0 0 16px; box-shadow:var(--shadow-sm); }
+#lodcore .lc-bar label { display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:600; color:var(--text-secondary); margin:0; }
+#lodcore .lc-bar input[type=text], #lodcore .lc-bar select { border:1px solid var(--border-main); border-radius:var(--radius-sm);
+  padding:8px 12px; font-size:13px; font-weight:500; min-width:150px; height:auto; color:var(--text-main); outline:none; box-shadow:none; }
+#lodcore .lc-bar input[type=text] { background:var(--bg-tinted); }
+#lodcore .lc-bar select { background:#FFFFFF; cursor:pointer; }
+#lodcore .lc-bar input[type=text]:focus, #lodcore .lc-bar select:focus { border-color:var(--madrid-red); box-shadow:0 0 0 2px rgba(200,16,46,.15); }
+#lodcore .lc-bar input[type=range] { width:110px; accent-color:var(--madrid-red); cursor:pointer; padding:0; margin:0; }
+#lodcore .lc-btn { background:var(--madrid-red); color:#FFFFFF; border:1px solid var(--madrid-red); border-radius:var(--radius-sm); padding:8px 14px;
+  cursor:pointer; font-size:12.5px; font-weight:700; display:inline-flex; align-items:center; gap:6px; line-height:1.3; }
+#lodcore .lc-btn:hover { background:var(--madrid-red-dark); border-color:var(--madrid-red-dark); }
+#lodcore .lc-btn.lc-o { background:transparent; color:var(--madrid-red); }
+#lodcore .lc-btn.lc-o:hover { background:var(--madrid-red-light); }
+
+/* ---- Rejilla mapa + panel de capas ---- */
+#lodcore .lc-grid { display:grid; grid-template-columns:minmax(0,1fr) 310px; gap:16px; }
+@media (max-width: 980px) { #lodcore .lc-grid { grid-template-columns:minmax(0,1fr); } }
+
+#lodcore .lc-box { position:relative; isolation:isolate; background:#FFFFFF; border:1px solid var(--border-main); border-radius:var(--radius-sm);
+  box-shadow:var(--shadow-card); overflow:hidden; display:flex; flex-direction:column; }
+#lodcore .lc-top { display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;
+  padding:10px 14px; background:#FFFFFF; border-bottom:1px solid var(--border-subtle); }
+#lodcore .lc-top .lc-t { font-size:12px; font-weight:700; color:var(--text-main); }
+#lodcore .lc-pills { display:flex; gap:6px; flex-wrap:wrap; }
+#lodcore .lc-pill { background:var(--bg-subtle); border:1px solid var(--border-main); color:var(--text-secondary); border-radius:var(--radius-sm);
+  padding:5px 10px; font-size:11.5px; font-weight:600; cursor:pointer; transition:all 0.15s ease; }
+#lodcore .lc-pill:hover { border-color:var(--madrid-red); color:var(--madrid-red); }
+#lodcore .lc-pill.on { background:var(--madrid-red); border-color:var(--madrid-red); color:#FFFFFF; }
+
+#lodcore .lc-stage { position:relative; height:var(--alto); min-height:420px; }
+#lodcore #lc-map { position:absolute; inset:0; width:100%; height:100%; background:var(--bg-page); z-index:10; font-family:var(--font-primary); }
+/* El tema de APEX no debe deformar las teselas de Leaflet */
+#lodcore #lc-map img, #lodcore #lc-map .leaflet-tile { max-width:none !important; max-height:none !important; }
+#lodcore .leaflet-bar { border:1px solid var(--border-main); box-shadow:var(--shadow-card); border-radius:var(--radius-sm); }
+#lodcore .leaflet-bar a { color:var(--text-main); border-bottom-color:var(--border-subtle); }
+#lodcore .leaflet-bar a:hover { background:var(--madrid-red-light); color:var(--madrid-red); }
+
+#lodcore .lc-top5 { position:absolute; top:12px; left:12px; z-index:650; width:240px; background:rgba(255,255,255,.97);
+  border:1px solid var(--border-main); border-radius:var(--radius-sm); padding:10px 12px; box-shadow:var(--shadow-card); }
+#lodcore .lc-top5 .lc-h { font-weight:700; font-size:12px; letter-spacing:.05em; color:var(--madrid-red); }
+#lodcore .lc-top5 .lc-sub { font-size:11px; color:var(--text-muted); font-weight:500; }
+#lodcore .lc-top5 ul { list-style:none; margin:6px 0 0; padding:0; }
+#lodcore .lc-top5 li { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:5px 6px; font-size:12px;
+  border-bottom:1px solid var(--border-subtle); border-radius:var(--radius-sm); cursor:pointer; margin:0; color:var(--text-main); }
+#lodcore .lc-top5 li:last-child { border-bottom:none; }
+#lodcore .lc-top5 li:hover { background:var(--bg-subtle); }
+#lodcore .lc-top5 li span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:500; }
+#lodcore .lc-top5 li > b { font-family:var(--font-mono); font-size:11.5px; font-weight:600; white-space:nowrap; }
+#lodcore .lc-top5 li.lc-vacio { color:var(--text-muted); cursor:default; }
+
+#lodcore .lc-hover { position:absolute; display:none; z-index:700; width:310px; background:#FFFFFF; border:1px solid var(--border-main);
+  border-radius:var(--radius-sm); box-shadow:var(--shadow-hover); padding:14px 16px; font-size:12px; }
+#lodcore .lc-patr { color:var(--text-secondary); font-size:11.5px; line-height:1.45; margin-top:8px; }
+#lodcore .lc-patr.lc-clamp { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+
+#lodcore .lc-aviso { position:absolute; inset:0; z-index:800; display:flex; flex-direction:column; align-items:center;
+  justify-content:center; gap:10px; text-align:center; padding:20px; background:rgba(248,249,250,.93); font-weight:600; color:var(--text-main); }
+#lodcore .lc-aviso.lc-err { color:var(--status-baja); }
+#lodcore .lc-aviso small { font-weight:400; color:var(--text-muted); max-width:420px; }
+
+/* ---- Panel lateral (como las tarjetas del Observatorio) ---- */
+#lodcore .lc-card { background:#FFFFFF; border:1px solid var(--border-main); border-radius:var(--radius-sm); padding:18px;
+  margin-bottom:16px; box-shadow:var(--shadow-card); }
+#lodcore .lc-card-t { font-size:14px; font-weight:700; color:var(--text-main); margin:0 0 10px; padding-bottom:8px; border-bottom:1px solid var(--border-subtle); }
+#lodcore .lc-capas label { display:flex; gap:8px; align-items:center; padding:6px 8px; cursor:pointer; border-radius:var(--radius-sm);
+  font-size:12.5px; margin:0; color:var(--text-main); font-weight:500; }
+#lodcore .lc-capas label:hover { background:var(--bg-subtle); }
+#lodcore .lc-capas input { margin:0; accent-color:var(--madrid-red); }
+#lodcore .lc-leg-t { font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em; margin-top:12px; }
+#lodcore .lc-estado { font-size:12px; color:var(--text-secondary); line-height:1.55; }
+#lodcore .lc-estado b { color:var(--text-main); }
+
+/* ---- Insignias, barras, avisos ---- */
+#lodcore .lc-bd { display:inline-block; font-size:11px; font-weight:700; padding:2px 8px; border-radius:var(--radius-sm); border:1px solid var(--border-subtle);
+  color:var(--text-muted); background:var(--bg-subtle); white-space:nowrap; }
+#lodcore .lc-bd.obs  { background:var(--madrid-blue-light); border-color:#B8E0F2; color:var(--madrid-blue-dark); }
+#lodcore .lc-bd.est  { background:var(--status-media-bg); border-color:#FCD34D; color:var(--status-media); }
+#lodcore .lc-bd.proy { background:var(--status-alta-bg); border-color:#A3D9B1; color:var(--status-alta); }
+#lodcore .lc-bd.sim  { background:var(--status-baja-bg); border-color:#FCA5A5; color:var(--status-baja); }
+#lodcore .lc-b { height:8px; background:var(--border-subtle); border-radius:var(--radius-sm); overflow:hidden; }
+#lodcore .lc-b i { display:block; height:100%; background:var(--madrid-blue); border-radius:var(--radius-sm); }
+#lodcore .lc-b.green i { background:var(--status-alta); }
+#lodcore .lc-b.amber i { background:var(--status-media); }
+#lodcore .lc-b.red i { background:var(--status-baja); }
+#lodcore .lc-m { display:grid; grid-template-columns:96px 1fr 40px; gap:8px; align-items:center; font-size:12px; margin:5px 0; color:var(--text-secondary); }
+#lodcore .lc-m b { text-align:right; font-family:var(--font-mono); font-weight:600; color:var(--text-main); }
+#lodcore .lc-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin:10px 0; }
+#lodcore .lc-stat { background:var(--bg-subtle); border:1px solid var(--border-subtle); border-radius:var(--radius-sm); padding:5px 8px; }
+#lodcore .lc-stat div { font-size:9.5px; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+#lodcore .lc-stat b { font-family:var(--font-mono); font-size:12px; font-weight:600; color:var(--text-main); }
+#lodcore .lc-chip { display:inline-block; font-size:11px; font-weight:700; padding:2px 8px; border-radius:var(--radius-sm); border:1px solid; }
+#lodcore .lc-chip.red   { background:var(--status-baja-bg);  color:var(--status-baja);  border-color:#FCA5A5; }
+#lodcore .lc-chip.amber { background:var(--status-media-bg); color:var(--status-media); border-color:#FCD34D; }
+#lodcore .lc-chip.green { background:var(--status-alta-bg);  color:var(--status-alta);  border-color:#A3D9B1; }
+#lodcore .lc-chip.gray  { background:var(--bg-subtle); color:var(--text-secondary); border-color:var(--border-main); }
+#lodcore .lc-proc { margin-top:8px; font-size:10.5px; color:var(--text-muted); word-break:break-word; }
+
+/* ---- Iconos (Font Awesome / Font APEX del tema) ---- */
+#lodcore .lc-ico { margin-right:6px; }
+
+/* ---- Métrica de la capa activa: primer campo de la tarjeta (como .kpi-box) ---- */
+#lodcore .lc-dest { background:var(--bg-subtle); border:1px solid var(--border-main); border-left:4px solid var(--madrid-red);
+  border-radius:var(--radius-sm); padding:10px 12px; margin:2px 0 10px; }
+#lodcore .lc-dest-t { font-size:10px; font-weight:700; color:var(--madrid-red); text-transform:uppercase; letter-spacing:.05em; }
+#lodcore .lc-dest-l { font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em; margin-top:2px; }
+#lodcore .lc-dest-v { font-family:var(--font-mono); font-size:22px; font-weight:700; line-height:1.15; color:var(--text-main); margin-top:2px; }
+#lodcore .lc-dest-v small { font-family:var(--font-primary); font-size:11px; font-weight:600; color:var(--text-muted); margin-left:2px; }
+#lodcore .lc-dest-s { font-size:12px; color:var(--text-secondary); margin-top:3px; }
+#lodcore .lc-dest .lc-b { margin-top:6px; }

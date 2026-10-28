@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Mapa de capacidad de acogida territorial de la Comunidad de Madrid">
+  <title>Mapa de Capacidad Territorial | LoDCORE Madrid</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="mapa.css">
+</head>
+<body>
+<!-- Para APEX: el contenido reutilizable es el bloque <div id="lodcore"> ... </div>.
+     Este wrapper (head/body/scripts) es para la vista local del mapa. -->
+<!-- LoDCORE · Mapa de municipios — solo el HTML de la región (el CSS y el JS van en archivos aparte) -->
+<div id="lodcore">
+  <div class="lc-bar">
+    <label>Buscar municipio<input type="text" id="lc-q" placeholder="Ej. Buitrago, Robledo..." autocomplete="off"></label>
+    <label>Comarca<select id="lc-comarca"><option value="all">Todas las comarcas</option></select></label>
+    <label>Población máx: <span id="lc-pv">50</span> mil<input type="range" id="lc-pop" min="1" max="50" step="1" value="50"></label>
+    <label>Precio máx: <span id="lc-prv">3500</span> €/m²<input type="range" id="lc-pr" min="1100" max="3500" step="100" value="3500"></label>
+    <label>Transporte mín: <span id="lc-tv">0</span>/100<input type="range" id="lc-tr" min="0" max="80" step="5" value="0"></label>
+    <label>Cuello de botella
+      <select id="lc-limit">
+        <option value="all">Cualquier factor</option>
+        <option value="Sanidad">Sanidad</option>
+        <option value="Educación">Educación</option>
+        <option value="Vivienda">Vivienda</option>
+      </select>
+    </label>
+    <button type="button" class="lc-btn lc-o" id="lc-rst">Limpiar Filtros</button>
+  </div>
+
+  <div class="lc-grid">
+    <div class="lc-box">
+      <div class="lc-top">
+        <div class="lc-t"><span class="fa fa-map-o lc-ico" aria-hidden="true"></span>Capa Base Geográfica:</div>
+        <div class="lc-pills">
+          <button type="button" class="lc-pill on" data-tile="ign">IGN España</button>
+          <button type="button" class="lc-pill" data-tile="street">Callejero Detallado</button>
+          <button type="button" class="lc-pill" data-tile="sat">Satélite Esri</button>
+        </div>
+      </div>
+      <div class="lc-stage" id="lc-stage">
+        <div id="lc-map"></div>
+        <div class="lc-top5">
+          <div class="lc-h">TOP 5</div>
+          <div class="lc-sub" id="lc-top-sub"></div>
+          <ul id="lc-top"></ul>
+        </div>
+        <div class="lc-hover" id="lc-hover"></div>
+        <div class="lc-aviso" id="lc-aviso">Cargando municipios…</div>
+      </div>
+    </div>
+
+    <aside>
+      <div class="lc-card">
+        <div class="lc-card-t">Capa Activa en el Mapa</div>
+        <div class="lc-capas" id="lc-capas"></div>
+        <div id="lc-leyenda"></div>
+      </div>
+      <div class="lc-card">
+        <div class="lc-card-t">Datos</div>
+        <div class="lc-estado" id="lc-estado">—</div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="mapa.js"></script>
+</body>
+</html>
