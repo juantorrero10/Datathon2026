@@ -78,6 +78,10 @@ FRONT_MAPA = r"""<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/di
 .mv .pills{position:absolute;top:10px;right:10px;z-index:20;display:flex;gap:6px}
 .mv .mv-pill{border:1px solid #cbd5e1;background:#fff;border-radius:99px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer}
 .mv .mv-pill.on{background:#0f766e;color:#fff;border-color:#0f766e}
+.mv .ctx{position:fixed;z-index:99;background:#fff;border:1px solid #cbd5e1;border-radius:9px;box-shadow:0 8px 22px rgba(15,42,68,.14);display:none;min-width:140px;overflow:hidden}
+.mv .ctx button{display:block;width:100%;text-align:left;background:#fff;border:0;padding:9px 12px;font:inherit;font-size:12px;font-weight:700;color:#334155;cursor:pointer}
+.mv .ctx button:hover:enabled{background:#f4f7fa;color:#0f766e}
+.mv .ctx button[disabled]{color:#94a3b8;cursor:not-allowed}
 @media(max-width:1000px){.mv .grid{grid-template-columns:1fr}}
 </style>
 <div class="mv">
@@ -97,6 +101,10 @@ FRONT_MAPA = r"""<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/di
   </div>
  </div>
  <div id="mvErr" class="err"></div>
+ <div class="ctx" id="mvCtx" data-cod="">
+  <button type="button" id="mvCtxDet">Detalles</button>
+  <button type="button" id="mvCtxCmp" disabled title="Disponible pr&oacute;ximamente">Comparar</button>
+ </div>
  <div class="stage locked" id="mvStage">
   <div id="mvOverlay"><div id="mvSpin" class="spin" style="display:none"></div>Ejecuta la predicci&oacute;n para visualizar</div>
   <div class="mvBlur">
@@ -152,6 +160,26 @@ function colorCapa(m){
   return "rgb("+Math.round(255-(255-base[0])*t)+","+Math.round(255-(255-base[1])*t)+","+Math.round(255-(255-base[2])*t)+")";
 }
 function api(n,p,cb){apex.server.process(n,p,{dataType:"json",success:cb,error:function(){var e=$("mvErr"),b=$("mvBtn"),s=$("mvSpin");if(e){e.style.display="block";e.textContent="El servidor respondio con error; revisa el log de la base.";}if(b)b.disabled=false;if(s)s.style.display="none";}});}
+// ── enlace Mapa → Simulador What-If ──
+// Guards selección en sessionStorage y navega a la pág. 10; ahí el front del
+// Simulador, tras rellenar el select de municipios (DATOS), preseleciona el
+// municipio con el año del mapa y ejecuta la FASE 1 (SIMULAR con sliders a 0).
+function abrirWI(cod,anio){
+  if(!cod)return;
+  try{sessionStorage.setItem("pvWiJugada",JSON.stringify({cod:String(cod),anio:Number(anio)||2030}));}catch(e){}
+  apex.navigation.redirect("f?p="+apex.env.APP_ID+":10:"+apex.env.APP_SESSION+"::NO:::");
+}
+function menuCtx(x,y,cod){
+  var m=$("mvCtx");if(!m)return;
+  if(!cod){m.style.display="none";return;}
+  m.setAttribute("data-cod",String(cod));
+  m.style.right="";m.style.bottom="";
+  m.style.display="block";
+  var w=m.offsetWidth||140,h=m.offsetHeight||84;
+  m.style.left=Math.max(6,Math.min(x,window.innerWidth-w-6))+"px";
+  m.style.top=Math.max(6,Math.min(y,window.innerHeight-h-6))+"px";
+}
+function cerrarCtx(){var m=$("mvCtx");if(m)m.style.display="none";}
 function render(){
   calcularMax();
   if(geoLayer)geoLayer.eachLayer(function(l){l.setStyle({fillColor:colorCapa(M[l.__cod]||{})});});
@@ -215,7 +243,13 @@ function pintaGeo(){
     onEachFeature:function(f,l){l.__cod=f.properties.cod;
      l.on("mouseover",function(){l.setStyle({weight:2.5,color:"#232323"});if(M[f.properties.cod])pintarTarjeta(M[f.properties.cod],false);});
      l.on("mouseout",function(){l.setStyle({weight:1,color:"#fff"});if(SEL!==f.properties.cod)cerrarTarjeta();});
-     l.on("click",function(){if(M[f.properties.cod]){SEL=f.properties.cod;pintarTarjeta(M[SEL],true);}});
+     l.on("click",function(){ if(M[f.properties.cod]){ cerrarCtx(); abrirWI(f.properties.cod,$("mvAnio").value); } });
+     l.on("contextmenu",function(ev){
+       var oe=ev.originalEvent;
+       if(oe&&oe.preventDefault){oe.preventDefault();}
+       if(oe&&oe.stopPropagation){oe.stopPropagation();}
+       menuCtx((oe&&oe.clientX)||0,(oe&&oe.clientY)||0,f.properties.cod);
+     });
     }
   }).addTo(MAP);
 }
@@ -224,16 +258,23 @@ function dibujarSueltos(){
   DATA.forEach(function(m){ if(GEO_MUNS[m.cod])return;
    var mk=L.circleMarker([m.lat,m.lon],{radius:7,fillColor:colorCapa(m),fillOpacity:.85,color:"#fff",weight:1.5});
    mk.__cod=m.cod;
-   mk.on("click",function(){SEL=m.cod;pintarTarjeta(m,true);});
+   mk.on("click",function(){cerrarCtx();abrirWI(m.cod,$("mvAnio").value);});
+   mk.on("contextmenu",function(ev){var oe=ev.originalEvent;if(oe&&oe.preventDefault)oe.preventDefault();menuCtx((oe&&oe.clientX)||0,(oe&&oe.clientY)||0,m.cod);});
    mk.on("mouseover",function(){pintarTarjeta(m,false);});
    mk.on("mouseout",function(){if(SEL!==m.cod)cerrarTarjeta();});
    suelto.addLayer(mk);
   });
 }
+
 function boot(){
   MAP=L.map("mvMap",{center:[40.55,-3.65],zoom:9,minZoom:8,maxZoom:13,zoomControl:false});
   L.control.zoom({position:"bottomright"}).addTo(MAP);
   MAP.on("click",function(){SEL=null;cerrarTarjeta();});
+  MAP.on("contextmenu",function(){cerrarCtx();});
+  var bd=$("mvCtxDet");if(bd)bd.addEventListener("click",function(){var m=$("mvCtx");var c=m?m.getAttribute("data-cod"):null;cerrarCtx();abrirWI(c,$("mvAnio").value);});
+  var bc=$("mvCtxCmp");if(bc)bc.addEventListener("click",function(){ /* Comparar: no implementado todavía */ });
+  document.addEventListener("click",cerrarCtx);
+  document.addEventListener("contextmenu",function(ev){ if(ev.target && ev.target.closest && ev.target.closest("#mvCtx")) return; cerrarCtx(); });
   // Fondo: gris plano por defecto; el interruptor "Satélite" alterna la capa satelital
   var TILES={
    sat:{url:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",opt:{maxZoom:19,attribution:"Tiles \u00A9 Esri, Maxar"}}

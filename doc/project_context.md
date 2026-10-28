@@ -88,6 +88,14 @@ Proceso AJAX "DATOS"    → ya funciona (tabla de municipios + serie)
 Proceso AJAX "SIMULAR"  → hoy llama a `PV_SIMULA` solo para el año ACTUAL,
                           con recálculo del índice por percent-ranks puro en SQL
                           (es el esqueleto — hay que enchufarle los modelos)
+Enlace Mapa ↔ Simulador → clic izq. en el mapa (o menú contextual "Detalles")
+                          guarda {cod, año} en sessionStorage "pvWiJugada" y
+                          navega a la pág. 10; el Simulador, tras rellenar el
+                          select con DATOS, auto-ejecuta la FASE 1 (SIMULAR con
+                          sliders a 0). "Comparar" en el menú contextual queda
+                          reservado (no-op). Implementado como OPCIÓN 1
+                          (recordar y re-jugar): los JSON de PV_MAPA y
+                          PV_SIMULA NO se unifican.
 ```
 
 ### El estado simulado (la parte ONNX)
@@ -230,6 +238,26 @@ Si alguno de los 3 se cumple → funcionamos. Si todos → proyecto redondo.
 
 ## 10. Registro de mantenimiento
 
+- **28-oct-2026 · fix PV_SIMULA "antes"** (quiebre mapa ↔ WI): el "antes" del
+  WI salía de `PV_MUN_BASE` (corte 2025 bruto): su `SALUD_10K` se computó sin
+  sumar CONSULTORIOS (121/155 municipios con servicio real a 0 almacenado) y
+  sin la regla "último dato disponible" para la sanidad 2025 (155/155 NULL en
+  el xlsx) — el mapa, que recalcula desde `PV_BASE_M3_M4`, mostraba 142,86
+  (La Acebeda) frente al 0,000 del WI. Ahora los stocks/ratios "antes" se
+  derivan de `PV_BASE_M3_M4` con las mismas fórmulas que "después"
+  (`PV_MUN_BASE` queda solo para las dims/índice del corte 2025). Verificado:
+  155/155 municipios, ratios/stocks "antes" y "después (sin choque)" idénticos
+  al mapa (delta 0 en salud/escuelas/paradas/viviendas/población), "antes"
+  estable entre años 2025-2035. Nota: escuelas=0 en 23 municipios es DATO
+  (estático, no bug).
+- **28-oct-2026 · interacción Mapa ↔ Simulador (fase 1 auto-ejecutada):**
+  clic izquierdo en un municipio del mapa (y menú contextual con "Detalles" y
+  "Comparar", este último no-op) guarda `{cod, año}` en
+  `sessionStorage "pvWiJugada"` y navega a la pág. 10, cuyo front canonizado
+  (`web/front_simulador.py`, extraído del estado vivo con
+  `web/canonizar_front_sim.py`) preseleciona municipio+año tras el DATOS y
+  ejecuta la FASE 1 automáticamente; la clave se limpia para que un refresh
+  no re-juegue. Detalle del enlace en §4.
 - **28-oct-2026 · reorganización tronco vs. visor + pipeline geo** (dos cosas
   en una):
   1. *Carpeta `web/`:* todo lo exclusivo de la página APEX 215 vive ahora en

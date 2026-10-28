@@ -86,7 +86,7 @@
 | Fichero | Qué es |
 |---|---|
 | `01_estado_base_m3_m4.sql` | DDL + INSERTs de `PV_BASE_M3_M4` (155 filas), generado por `mcp/generar_estado_base.py`. |
-| `03_pv_simula_v2.sql` | `PV_SIMULA(p_cod, p_anio, p_add_pop, p_add_viv, p_add_salud, p_add_esc, p_add_paradas)`: motor del simulador. M3 (factor; si año ≤ 2025 usa la serie real) → estado simulado → 5 `PREDICTION` de M4 → índice ponderado + factor limitante → CLOB JSON "antes/después". Banda M3 tomada del backtest por horizonte. |
+| `03_pv_simula_v2.sql` | `PV_SIMULA(p_cod, p_anio, p_add_pop, p_add_viv, p_add_salud, p_add_esc, p_add_paradas)`: motor del simulador. M3 (factor; si año ≤ 2025 usa la serie real) → estado simulado → 5 `PREDICTION` de M4 → índice ponderado + factor limitante → CLOB JSON "antes/después". El bloque "antes" se derive íntegramente de `PV_BASE_M3_M4` (mismo estado que el mapa); `PV_MUN_BASE` solo aporta dims/índice del corte 2025. Banda M3 tomada del backtest por horizonte. |
 | `04_pv_mapa.sql` | `PV_MAPA(p_anio)`: métricas masivas de los 155 municipios para el mapa (7 `PREDICTION` en línea: M3 → estado → 5×M4 → M6 → índice + factor limitante). Extrapolación sostenida: f(h>5) = POWER(f5, h/5). |
 | `05_pv_geo_munis.sql` | Referencia de `PV_GEO_MUNIS` (códigos + CLOB GeoJSON por municipio); los INSERTs van por binds desde `web/descargar_geojson.py`. |
 

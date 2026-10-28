@@ -49,7 +49,12 @@ CREATE OR REPLACE FUNCTION PV_SIMULA (
     V_DIM_ACC     NUMBER;
     V_DIM_EMP     NUMBER;
 
-    -- "antes": corte real 2025 de PV_MUN_BASE (mismas columnas que la app)
+    -- "antes": mismo estado base que "después" y que el mapa (PV_BASE_M3_M4).
+    -- PV_MUN_BASE se usa SOLO para las dims/índice del corte 2025 (ranks de
+    -- cohorte). Los stares/ratios de PV_MUN_BASE quedan fuera: su SALUD_10K se
+    -- computó sin sumar CONSULTORIOS (121/155 con servicio real a 0 en el
+    --	store) y con sanidad 2025 vacía sin el "último dato disponible" — eso
+    --    pantallaaba 0,000 en el WI frente a 142,86 en el mapa.
     B_POB         NUMBER;  B_VIV NUMBER;  B_SALUD NUMBER;  B_ESC NUMBER;  B_PAR NUMBER;
     BS_10K        NUMBER;  BS_E1000 NUMBER;  BS_P1000 NUMBER;  BS_V1000 NUMBER;
     BD_DEM        NUMBER;  BD_VIV NUMBER;  BD_SER NUMBER;  BD_ACC NUMBER;  BD_EMP NUMBER;
@@ -57,13 +62,20 @@ CREATE OR REPLACE FUNCTION PV_SIMULA (
 BEGIN
     -- ── 0 · estado base (features con paridad de entrenamiento) ──
     SELECT * INTO R FROM PV_BASE_M3_M4 WHERE COD_INE = P_COD;
-    SELECT POBLACION, VIVIENDAS_TOTAL, CENTROS_SALUD + NVL(CONSULTORIOS,0), ESCUELAS,
-           PARADAS_TOTAL, SALUD_10K, ESCUELAS_1000, PARADAS_1000, VIV_1000,
-           DIM_DEM, DIM_VIV, DIM_SER, DIM_ACC, DIM_EMP, INDICE
-      INTO B_POB, B_VIV, B_SALUD, B_ESC, B_PAR,
-           BS_10K, BS_E1000, BS_P1000, BS_V1000,
-           BD_DEM, BD_VIV, BD_SER, BD_ACC, BD_EMP, B_INDICE
+    SELECT DIM_DEM, DIM_VIV, DIM_SER, DIM_ACC, DIM_EMP, INDICE
+      INTO BD_DEM, BD_VIV, BD_SER, BD_ACC, BD_EMP, B_INDICE
       FROM PV_MUN_BASE WHERE COD_INE = P_COD;
+
+    -- stocks "antes" = mismos stocks que "después" sin choque del usuario
+    B_POB   := R.POBLACION_2025;
+    B_VIV   := R.VIV_STOCK;
+    B_SALUD := R.CENTROS_SALUD_NUM;
+    B_ESC   := R.ESCUELAS;
+    B_PAR   := R.PARADAS_BASE;
+    BS_10K   := CASE WHEN B_POB > 0 THEN B_SALUD / B_POB * 10000 ELSE 0 END;
+    BS_E1000 := CASE WHEN B_POB > 0 THEN B_ESC   / B_POB * 1000  ELSE 0 END;
+    BS_P1000 := CASE WHEN B_POB > 0 THEN B_PAR   / B_POB * 1000  ELSE 0 END;
+    BS_V1000 := CASE WHEN B_POB > 0 THEN B_VIV   / B_POB * 1000  ELSE 0 END;
 
     -- ── 1 · M3: factor de crecimiento hacia p_anio ──
     IF NVL(P_ANIO, 2025) <= 2025 THEN
