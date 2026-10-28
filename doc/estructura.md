@@ -2,7 +2,7 @@
 
 > Referencia rápida: qué es y para qué sirve cada archivo del repositorio.
 > Si tocas un fichero, actualiza esta lista.
-> Última revisión: 27-oct-2026 (reorganización: `oracle_db/`, `mcp/`, `tests/`).
+> Última revisión: 28-oct-2026 (limpieza del repositorio: caches `__pycache__` eliminadas, `.gitignore` reorganizado, `README.md` raíz, `run_all.py` corregido a `oracle_db/models`; detalle en `project_context.md` §10).
 
 ---
 
@@ -10,6 +10,8 @@
 
 | Fichero / carpeta | Qué es |
 |---|---|
+| `README.md` | Portada del proyecto: qué es, cómo reproducir los modelos (`scripts/run_all.py`), mapa del repositorio y convenciones. |
+| `.gitignore` | Reglas de versionado: excluye el wallet, `.env`, `opencode.json` (config local), caches de Python y carpetas de IDE. |
 | `opencode.json` | Configuración de **OpenCode** para este workspace: define el servidor MCP local `apex-mcp` (que conecta a Oracle/APEX). El `APEX_MCP_READ_ONLY=false` permite DML/DDL por MCP. |
 | `data/dataset_155_municipios_2010-2025.xlsx` | **Único dataset de entrada**: 5 sheets (LEEME, panel municipio-año 2010-2025 = 2.480 filas × 32 columnas oficiales INE/CAM, estática de los 155 municipios < 50.000 hab, diccionario, fuentes). Alimenta los pipelines de M3 y M4. |
 
@@ -31,7 +33,7 @@
 |---|---|
 | `run_m3_demografia.py` | Pipeline completo M3: xlsx → features → entrenar → `.onnx` + ficha. |
 | `run_m4_capacidad.py` | Pipeline completo M4 → 5 `.onnx` + ficha. |
-| `run_all.py` | Lanza los dos en orden y comprueba que los `.onnx` existen. |
+| `run_all.py` | Lanza los dos en orden y comprueba que existen los 6 `.onnx` esperados (1 de M3 + 5 de M4) en `oracle_db/models/`. |
 
 ## mcp/ — operación del asistente (conexión con la base y APEX)
 
@@ -83,7 +85,8 @@
 
 ## tests/
 
-Carpeta creada; a día de hoy **vacía**. Si se añaden tests, van aquí (pytest).
+Reservada para tests (pytest). Hoy **vacía**: solo contiene un `.gitkeep`
+para que git preserve la carpeta en el repositorio.
 
 ## wallet/
 

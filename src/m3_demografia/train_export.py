@@ -1,8 +1,8 @@
 """M3 · Demografía — entrenamiento, export ONNX y validación.
 
 Salida:
-    oracle/models/m3_demografia.onnx
-    oracle/models/m3_demografia.json      (ficha del modelo)
+    oracle_db/models/m3_demografia.onnx
+    oracle_db/models/m3_demografia.json   (ficha del modelo)
     doc/modelos/m3_demografia.json        (copia para el jurado)
 
 Contrato del modelo:

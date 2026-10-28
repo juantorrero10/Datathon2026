@@ -10,11 +10,11 @@
 --   2. etado simulado: base(año) + choque del usuario → ratios
 --   3. M4_CAPACIDAD_{DEM,VIV,SER,ACC,EMP} → 5 dimensiones (0-100)
 --   4. índice (pesos fijos 0.20/0.15/0.25/0.25/0.15) y factor limitante
---      (argmin de las 5 dims) — SQL determinista, sin modelо
+--      (argmin de las 5 dims) — SQL determinista, sin modelo
 --
 -- Requiere: PV_BASE_M3_M4 (01), modelos ONNX (02), PV_SERIE y PV_MUN_BASE.
 -- Bandas del M3: mediana de |err| % por horizonte (ficha
--- oracle/models/m3_demografia.json); horizontes > 5 son extrapolación
+-- oracle_db/models/m3_demografia.json); horizontes > 5 son extrapolación
 -- y usan la banda de h=5 (2,2 %) como mínimo declarado.
 -- =====================================================================
 

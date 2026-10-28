@@ -1,10 +1,22 @@
-wallet
-opencode.json
-src/common
+# --- Secretos y credenciales (nunca en el repo) ---
+wallet/
 .env
 .env.*
-.venv/
-.cache/
+
+# --- Config local del asistente (OpenCode/MCP) ---
+opencode.json
+
+# --- Python ---
 __pycache__/
 *.py[cod]
+.venv/
+.cache/
 .pytest_cache/
+*.egg-info/
+
+# --- IDEs ---
+.idea/
+
+# --- Sistema operativo ---
+.DS_Store
+Thumbs.db

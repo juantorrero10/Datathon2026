@@ -1,4 +1,4 @@
-"""Genera oracle/apex_export/f215_simulador.sql a partir de f215_sql_original.sql.
+"""Genera oracle_db/backups/simulador.sql a partir de oracle_db/backups/sql_original.sql.
 
 Operaciones sobre el texto del export, cada una con marcador único:
   1. workspace id del import: 9407325500210183 -> 9407325500210184 (el real).

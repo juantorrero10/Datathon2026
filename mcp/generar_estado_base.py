@@ -2,7 +2,7 @@
 PV_SIMULA v2: los features EXACTOS que consumen M3 y M4, calculados con el
 mismo código del entrenamiento (paridad garantizada Python/SQL).
 
-  - Genera:  oracle/sql/01_estado_base_m3_m4.sql   (DDL + INSERTs, referencia)
+  - Genera:  oracle_db/sql/01_estado_base_m3_m4.sql   (DDL + INSERTs, referencia)
   - Ejecuta: DDL + INSERTs en la base (conexión local por wallet)
 
 Columnas de PV_BASE_M3_M4:

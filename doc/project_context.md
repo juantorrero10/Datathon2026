@@ -43,25 +43,25 @@ inventadas, por lo que la regla de honestidad ahora es más sencilla.
 |---|---|
 | `LEEME` / `Diccionario` / `Fuentes` | Metadatos (109 indicadores) |
 | `Panel_2010_2025` | Panel apilado: 155 municipios × años 2010-2025 = 2.480 filas × 32 columnas (demografía, paro, centros de salud, consultorios, transporte, paradas, valor catastral) |
-| `Municipios` |иболее 155 filas: datos geográficos y de accesibilidad de cada municipio (distancia a Madrid, paradas por modo, escuelas en ALTA, estaciones de calidad del aire) |
+| `Municipios` | 155 filas: datos geográficos y de accesibilidad de cada municipio (distancia a Madrid, paradas por modo, escuelas en ALTA, estaciones de calidad del aire) |
 
 ---
 
 ## 3. Los modelos M1-M5: qué se sube a Oracle y qué no
 
-Espectro de decisión (hay 2 modelos ONNX en `oracle/models`):
+Espectro de decisión (hay 2 modelos ONNX en `oracle_db/models`):
 
 | Modelo | ¿Se sube? | Motivo |
 |---|---|---|
-| **M3 · Demografía** | ✅ **Sí, ONNX** | Es lo que da la **dimensión temporal** al simulador: predice la trayectoria poblacional (factor de crecimiento por horizonte h) del municipio para el año elegido. Sin el, el "año seleccionado" tendria que volver a ser una tabla precaculada estática |
-| **M4 · Capacidad / Vitalidad** | ✅ **Sí, ONNX** | Es el **motor de las métricas simuladas**: aprende el mapeo estado municipal (ratios de saturación) → 5 dimensiones + índice. Al äüssenle el estado simulado del año Y devuelve las 5 dims (0-100) que pinta la interfaz |
-| **M1 · AVM (precio vivienda)** | ❌ No | El negocio del simulador no es comprar piso; los precios quedan como valor estático del mapa. Además sus métricas es la más débil del proyecto (### ra: imposible ajustar bien el precio con esta muestra y unitario) |
-| **M2 · Indicadores (PCA)** | ❌ No | Era un motor para los sub-índices calibrados del borrador antiguo. Las 5 dimensiones viven ahora (en el ínice) como rangos percentiles calcados en SQL; el PCA no modela nada nuevo sobre este estado |
-| **M5 · Recomendador / ranking** | ❌ No | El ranking de los 155 municipios ya es una vista del mapa (columna `indice`), altamente interpretable y probada. **El simulador no ordena municipios; simula un municipio**. Una recommendation y un ranking son cosas distintas (ver §4 del legacy) |
+| **M3 · Demografía** | ✅ **Sí, ONNX** | Es lo que da la **dimensión temporal** al simulador: predice la trayectoria poblacional (factor de crecimiento por horizonte h) del municipio para el año elegido. Sin él, el "año seleccionado" tendría que volver a ser una tabla precalculada estática |
+| **M4 · Capacidad / Vitalidad** | ✅ **Sí, ONNX** | Es el **motor de las métricas simuladas**: aprende el mapeo estado municipal (ratios de saturación) → 5 dimensiones + índice. Al pasarle el estado simulado del año Y devuelve las 5 dims (0-100) que pinta la interfaz |
+| **M1 · AVM (precio vivienda)** | ❌ No | El negocio del simulador no es comprar piso; los precios quedan como valor estático del mapa. Además sus métricas son las más débiles del proyecto (imposible ajustar bien el precio con esta muestra y con target unitario) |
+| **M2 · Indicadores (PCA)** | ❌ No | Era un motor para los sub-índices calibrados del borrador antiguo. Las 5 dimensiones viven ahora (en el índice) como rangos percentiles calcados en SQL; el PCA no modela nada nuevo sobre este estado |
+| **M5 · Recomendador / ranking** | ❌ No | El ranking de los 155 municipios ya es una vista del mapa (columna `indice`), altamente interpretable y probada. **El simulador no ordena municipios; simula un municipio**. Una recomendación y un ranking son cosas distintas (ver §4 del legacy) |
 
-Filosofía: **una dimension, un modelo, un fichero .onnx**. Resultado del
-proyecto análog es simple: dos pipelines Python → dos .onnx → impregnados en
-Oracle.
+Filosofía: **una dimension, un modelo, un fichero .onnx** (M4 baja a la
+base como 5 ficheros, uno por dimensión). Resultado simple: dos pipelines
+Python → seis .onnx → cargados en Oracle.
 
 ---
 
@@ -69,7 +69,7 @@ Oracle.
 
 | Nivel | Dónde | Qué |
 |---|---|---|
-| **N1** | Entrenamiento (Python) | `src/m3_demografia` y `src/m4_capacidad` entrenan y exportan `oracle/models/*.onnx` |
+| **N1** | Entrenamiento (Python) | `src/m3_demografia` y `src/m4_capacidad` entrenan y exportan `oracle_db/models/*.onnx` |
 | **N2** | Oracle 23ai | Carga de ONNX (`DBMS_DATA_MINING` / `LOAD_ONNX_MODEL`) + `PREDICTION()` dentro de la función `PV_SIMULA` |
 | **N3** | APEX (app 215) | Formulario → proceso AJAX "SIMULAR" → `PV_SIMULA` → JSON → render previo en la página con JS |
 
@@ -78,15 +78,15 @@ Oracle.
 ```
 Proceso AJAX "DATOS"    → ya funciona (tabla de municipios + serie)
 Proceso AJAX "SIMULAR"  → hoy llama a `PV_SIMULA` solo para el año ACTUAL,
-                          con recalcul de índice por percent-ranks puro en SQL
+                          con recálculo del índice por percent-ranks puro en SQL
                           (es el esqueleto — hay que enchufarle los modelos)
 ```
 
-### El estado simulado (lo ONNX-entity)
+### El estado simulado (la parte ONNX)
 
 Ante cada combinación (año Y, P) el PL/SQL:
 
-1. **M3** entrega el factor d'croissance del municipio hacia el año Y →
+1. **M3** entrega el factor de crecimiento del municipio hacia el año Y →
    `poblacion_base(Y) = poblacion_2025 × factor` (y la banda de confianza
    baja/alta de la misma forma).
 2. Se añade el choque del usuario: `poblacion_sim(Y) = poblacion_base(Y) + N_hab`
@@ -96,49 +96,56 @@ Ante cada combinación (año Y, P) el PL/SQL:
 4. El `índice_sim` es combinación ponderada fija (0,20/0,15/0,25/0,25/0,15);
    el `factor_limitante` es el `argmin₁` de las 5 dims (regla SQL que ya
    funciona en `PV_SIMULA` y se conserva).
-5. Todo esto NO se persiste; sale como CLOB JSON. La function `PV_SIMULA`
-   devuelve el mismo esquema "antes/despues" que ya muestra el front: los 10
+5. Todo esto NO se persiste; sale como CLOB JSON. La función `PV_SIMULA`
+   devuelve el mismo esquema "antes/después" que ya muestra el front: los 10
    pares + `delta_indice`.
 
 **Regla de los pesos:** los pesos del índice son decisión del diseño y no
 cambia con el año ni con el perfil (no hay perfiles ya).
+
 ---
 
-## 5. Estructura del repositorio (nueva)
+## 5. Estructura del repositorio
 
 ```
 Datathon2026/
+├── README.md                                   ← portada del proyecto
 ├── data/
 │   └── dataset_155_municipios_2010-2025.xlsx   ← único dataset de entrada
 ├── doc/
 │   ├── project_context.md                      ← ESTE documento
+│   ├── estructura.md                           ← inventario fichero a fichero
 │   ├── legacy/                                 ← borrador anterior (referencia)
-│   └── modelos/                                ← (nuevo) fichas de M3 y M4
-├── oracle/
-│   ├── models/                                 ← SALIDA: un .onnx por modelo
+│   └── modelos/                                ← fichas de M3 y M4 (para el jurado)
+├── mcp/                                        ← infraestructura del asistente (Oracle/APEX)
+├── oracle_db/
+│   ├── models/                                 ← SALIDA: .onnx + fichas
 │   │   ├── m3_demografia.onnx
-│   │   └── m4_capacidad.onnx
-│   └── sql/                                    ← carga ONNX + PV_SIMULA v2
+│   │   └── m4_capacidad_{dem,viv,ser,acc,emp}.onnx
+│   ├── sql/                                    ← estado base + PV_SIMULA v2
+│   └── backups/                                ← exports SQL de la app 215
 ├── scripts/
 │   ├── run_m3_demografia.py                    ← ejecuta TODO el pipeline M3
 │   ├── run_m4_capacidad.py                     ← ejecuta TODO el pipeline M4
-│   └── run_all.py                              ← encadena los dos (entorno limpio)
+│   └── run_all.py                              ← encadena los dos y comprueba salidas
 ├── src/
-│   ├── common/                                 ← carga del xlsx + rutas
+│   ├── common/                                 ← carga del xlsx + rutas + Oracle
 │   ├── m3_demografia/                          ← features + train + export ONNX
 │   ├── m4_capacidad/                           ← features + train + export ONNX
 │   └── deprecated/                             ← código antiguo, solo referencia
-└── wallet/, opencode.json                      ← (sin cambios)
+├── tests/                                      ← reservada para pytest (hoy vacía)
+└── wallet/                                     ← credenciales Oracle (no versionado)
 ```
 
 Convenciones:
 
-- Cada pipeline acaba con un `.onnx` + un fichero de **ficha del modelo**
-  (`doc/modelos/m3.json`, `m4.json`): features exactas, orden, métricas de
-  backtest, fecha, hash del dataset. Sin ficha no se sube el modelo.
-- Los scripts `run_*.py` corrigen `sys.path`, cargan `data/*.x|x`, entrenan,
-  validan con onnxruntime **desde disco** (coin uso Python ↔ ONNX < 1e-6) y dejan
-  el fichero en `oracle/models/`. Son auto-contenidos y se ejecutan desde
+- Cada pipeline acaba con sus `.onnx` + un fichero de **ficha del modelo**
+  (`doc/modelos/m3_demografia.json`, `m4_capacidad.json`): features exactas,
+  orden, métricas de backtest, fecha, hash del dataset. Sin ficha no se sube
+  el modelo.
+- Los scripts `run_*.py` corrigen `sys.path`, cargan `data/*.xlsx`, entrenan,
+  validan con onnxruntime **desde disco** (error Python ↔ ONNX < 1e-6) y dejan
+  los ficheros en `oracle_db/models/`. Son auto-contenidos y se ejecutan desde
   cualquier sitio, sin dependencia mutua.
 
 ---
@@ -152,7 +159,7 @@ Convenciones:
 | **Features (M3)** | historial: CAGR 1/3/5/10 años, variabilidad, tasa migración/media edad, paro; sin el futuro | Ratios de saturación: hab/centro salud, hab/escuela, hab/parada, km²/hab, densidad, paro_100, edad, distancia, viviendas/1000 hab |
 | **Target (M4)** | población(t+h) / población(t) | Las 5 dims recalculadas con la misma fórmula de percent-rank del panel de ese año |
 | **Algoritmo** | GradientBoostingRegressor | RandomForestRegressor multi-output |
-| **Export** | `skl2onnx` (ArrayFeatureExtractor-less) | `skl2onnx` |
+| **Export** | `skl2onnx` | `skl2onnx` |
 | **Consumo en Oracle** | `PREDICTION(m3..., 1 poblacion, ...) → factor` | `PREDICTION(m4...) → 5 valores de dim` |
 
 ## 7. Estado de la app 215 (inventario real)
@@ -177,8 +184,9 @@ sustituida por M3 ONNX), `PV_VECINOS`, `PV_MUN_2035` (vista de mapa),
 
 La única forma de saber que el proyecto funciona:
 
-1. `python scripts/run_all.py` reproduce M3 y M4 desde el xlsx y dejan ambos
-   .onnx en `oracle/models/` con ficha y validación ONNX↔Python en verde.
+1. `python scripts/run_all.py` reproduce M3 y M4 desde el xlsx y dejan sus
+   seis `.onnx` (1 de M3 + 5 de M4) en `oracle_db/models/` con ficha y
+   validación ONNX↔Python en verde.
 2. En APEX 215 pág 10 se elige municipio+parámetros+**año** → "Simular escenario"
    → los 5 dims y el índice del escenario aparecen visualmente (barras
    antes/después + semáforo + factor limitante) en segundos, y desaparecen al recargar.
@@ -197,3 +205,22 @@ Si alguno de los 3 se cumple → funcionamos. Si todos → proyecto redondo.
 - Persistir simulaciones: prohibido por diseño (la simulación es efímera)
 - Precios de vivienda predictivos (M1): los precios quedan como dato estático
 - Isócronas GTFS, SARIMAX, inferencia causal, ampliar a los 179: roadmap futuro
+
+---
+
+## 10. Registro de mantenimiento
+
+- **28-oct-2026 · limpieza del repositorio** (sin cambios de funcionalidad):
+  eliminadas todas las carpetas `__pycache__/` (incluida la huérfana de
+  `m6_proyeccion`); `.gitignore` reorganizado por secciones (`+.idea/`;
+  eliminada la línea `src/common`, que era un residuo peligroso — ese código
+  del pipeline ya está versionado); nueva portada `README.md` en la raíz;
+  `tests/.gitkeep` para que git preserve la carpeta; corregidas las
+  referencias al antiguo `oracle/` que quedaron tras la reorganización
+  (`scripts/run_all.py`, docstrings de `src/` y `mcp/`, `README.md` de
+  `oracle_db/models/`, comentario de `PV_SIMULA`) hacia el `oracle_db/`
+  actual. `run_all.py` vuelve a comprobar las salidas reales: 1 `.onnx` de
+  M3 + 5 de M4 en `oracle_db/models/`. También se ha restaurado el texto
+  corrompido de este documento.
+- **27-oct-2026 · reorganización:** carpetas `oracle_db/`, `mcp/` y `tests/`;
+  unificación de la app en el Simulador (pág. 10).

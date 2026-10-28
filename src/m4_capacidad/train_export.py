@@ -1,8 +1,8 @@
 """M4 · Capacidad / Vitalidad — entrenamiento, export ONNX y validación.
 
 Salida:
-    oracle/models/m4_capacidad.onnx
-    oracle/models/m4_capacidad.json      (ficha del modelo)
+    oracle_db/models/m4_capacidad_{dem,viv,ser,acc,emp}.onnx
+    oracle_db/models/m4_capacidad.json      (ficha del modelo)
     doc/modelos/m4_capacidad.json        (copia para el jurado)
 
 Contrato del modelo:
