@@ -17,7 +17,7 @@ from dotenv import load_dotenv  # noqa: E402
 load_dotenv(r'C:\Users\juan\apex-mcp\.env', override=True)
 import os  # noqa: E402
 
-from web.front_simulador import CABECERA_SIM, FRONT_SIM  # noqa: E402
+from mcp.front_simulador import CABECERA_SIM, FRONT_SIM  # noqa: E402
 from src.common.oracle import conectar  # noqa: E402
 
 APP_ID = 215
@@ -92,7 +92,7 @@ def main() -> None:
 
     # 3) reimportar (borrar + importar)
     texto = re.sub(r"p_default_workspace_id=>\d+", "p_default_workspace_id=>NULL", texto, count=1)
-    from web.importar_export import sentencias
+    from mcp.importar_export import sentencias
     chunks = sentencias(texto)
 
     adm = conectar()

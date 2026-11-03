@@ -38,7 +38,7 @@ Requisitos: Python con `pandas`, `scikit-learn`, `skl2onnx`, `onnx`,
 | `src/` | Código Python: `common/`, `m1_demografia/` (M1), `m2_capacidad/` (M2), `m3_valor/` (M3, ant. M6) y `m4_stocks/` (M4, ant. M7); `deprecated/` solo referencia |
 | `oracle_db/` | `models/` (ONNX + fichas) y `sql/` (estado base + `PV_SIMULA`, `PV_MAPA`, `PV_GEO_MUNIS`) |
 | `mcp/` | Loaders del tronco hacia Oracle (estado base + carga ONNX) |
-| `web/` | **Visor**: todo lo exclusivo de la app APEX 215 — front del Simulador/Mapa, exports e `backups/` con `sql_original.sql`. No es necesario para reproducir el tronco. |
+| `web/` | Assets del visor (datos del mapa: geojson, límite). El código del visor vive en `mcp/`. |
 | `visuals/` | PNGs y diagramas del análisis (mapas de calor, rankings, arquitectura) |
 | `tests/` | Reservada para tests (pytest); hoy vacía |
 | `wallet/` | Wallet de Oracle con credenciales (local, no versionado) |
@@ -62,6 +62,6 @@ Requisitos: Python con `pandas`, `scikit-learn`, `skl2onnx`, `onnx`,
    `oracle_db/models/*.onnx` → Oracle → `PV_SIMULA`/`PV_MAPA` → APEX.
 2. Sin ficha JSON (`doc/modelos/…`) no se sube un modelo a Oracle.
 3. La simulación es efímera: nada se persiste.
-4. `web/backups/sql_original.sql` es el punto de restauración de la
+4. `oracle_db/backups/ (exports de la app)` es el punto de restauración de la
    app 215: no se sobreescribe.
 5. La caché del geo (`web/osm_raw_cm.json`) no va versionada.

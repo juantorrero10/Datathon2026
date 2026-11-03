@@ -29,7 +29,7 @@ import os  # noqa: E402
 
 from src.common.oracle import conectar  # noqa: E402
 
-OUT = REPO / "web" / "front_simulador.py"
+OUT = REPO / "oracle_db" / "front_simulador.py"
 
 # ── parches sobre el JS de la región (todo sobre texto DES-ESCAPADO) ──
 ANCLA_DATOS = r'''   $("swCod").innerHTML=m.map(function(x){return "<option value=\""+esc(x.cod)+"\">"+esc(x.nombre)+"</option>";}).join("");'''

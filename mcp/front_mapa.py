@@ -106,7 +106,7 @@ FRONT_MAPA = r"""<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/di
   <button type="button" id="mvCtxCmp" disabled title="Disponible pr&oacute;ximamente">Comparar</button>
  </div>
  <div class="stage locked" id="mvStage">
-  <div id="mvOverlay"><div id="mvSpin" class="spin" style="display:none"></div>Ejecuta la predicci&oacute;n para visualizar</div>
+  <div id="mvOverlay"><div id="mvSpin" class="spin" style="display:none"></div><span id="mvOverlayTx">Ejecuta la predicci&oacute;n para visualizar</span></div>
   <div class="mvBlur">
    <div class="grid">
     <div style="position:relative"><div id="mvMap"></div>
@@ -159,7 +159,7 @@ function colorCapa(m){
   var base=num(v)>0?[27,122,60]:[200,16,46];
   return "rgb("+Math.round(255-(255-base[0])*t)+","+Math.round(255-(255-base[1])*t)+","+Math.round(255-(255-base[2])*t)+")";
 }
-function api(n,p,cb){apex.server.process(n,p,{dataType:"json",success:cb,error:function(){var e=$("mvErr"),b=$("mvBtn"),s=$("mvSpin");if(e){e.style.display="block";e.textContent="El servidor respondio con error; revisa el log de la base.";}if(b)b.disabled=false;if(s)s.style.display="none";}});}
+function api(n,p,cb){apex.server.process(n,p,{dataType:"json",success:cb,error:function(){var e=$("mvErr"),b=$("mvBtn"),s=$("mvSpin");if(e){e.style.display="block";e.textContent="El servidor respondio con error; revisa el log de la base.";}if(b)b.disabled=false;if(s)s.style.display="none";var tx=document.getElementById("mvOverlayTx"),ov=document.getElementById("mvOverlay");if(tx){tx.textContent="Ejecuta la predicci\u00f3n para visualizar";}if(ov)ov.style.display="flex";}});}
 // ── enlace Mapa → Simulador What-If ──
 // Guards selección en sessionStorage y navega a la pág. 10; ahí el front del
 // Simulador, tras rellenar el select de municipios (DATOS), preseleciona el
@@ -227,7 +227,7 @@ function cerrarTarjeta(){$("mvTarjeta").style.display="none";}
 function run(){
   if($("mvBtn").disabled)return;
   $("mvErr").style.display="none";
-  $("mvBtn").disabled=true;$("mvSpin").style.display="block";
+  $("mvBtn").disabled=true;$("mvSpin").style.display="block";$("mvOverlayTx").textContent="Cargando\u2026";$("mvOverlay").style.display="flex";
   ANIO=Number($("mvAnio").value)||2030;$("mvV").textContent=String(ANIO);
   api("PRED",{x01:ANIO},function(d){
    $("mvBtn").disabled=false;$("mvSpin").style.display="none";

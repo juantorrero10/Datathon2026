@@ -2,6 +2,8 @@
 -- 04_pv_mapa — Modelo masivo del mapa: un año -> métricas de 155 municipios
 --
 -- Firma:  PV_MAPA(p_anio) RETURN CLOB  (JSON)
+--         PV_MAPA(p_anio, p_cod) -> SOLO ese municipio (comparador, pág. 50);
+--                                   p_cod validado ^[0-9]{5}$, otro valor = NULL
 --
 -- IMPLEMENTACIÓN: una ÚNICA SQL masiva (EXECUTE IMMEDIATE, sin binds en los
 -- CTE — los parámetros se incrustan como literales ENTEROS/TEXTO controlados)
@@ -27,7 +29,8 @@
 -- =====================================================================
 
 CREATE OR REPLACE FUNCTION PV_MAPA (
-    P_ANIO IN NUMBER
+    P_ANIO IN NUMBER,
+    P_COD  IN VARCHAR2 DEFAULT NULL
 ) RETURN CLOB IS
     V_JSON       CLOB;
     V_SQL        VARCHAR2(32767);
@@ -41,7 +44,14 @@ CREATE OR REPLACE FUNCTION PV_MAPA (
     V_FACTOR_M7_VIV VARCHAR2(4000);
     V_FACTOR_M7_SAL VARCHAR2(4000);
     V_FACTOR_M7_PAR VARCHAR2(4000);
+    V_COD        VARCHAR2(5);   -- filtro opcional: un solo municipio (comparador)
 BEGIN
+    -- p_cod opcional: solo códigos INE de 5 dígitos (el resto, NULL)
+    IF P_COD IS NOT NULL AND REGEXP_LIKE(P_COD, '^[0-9]{5}$') THEN
+        V_COD := P_COD;
+    ELSE
+        V_COD := NULL;
+    END IF;
     IF NVL(P_ANIO, 2025) <= 2025 THEN
         V_FUT       := 0;
         V_HORIZON   := 1;
@@ -120,7 +130,9 @@ BEGIN
         'b.VIV_LOG_POB, b.VIV_LOG_ST, b.VIV_CAGR_1, b.VIV_CAGR_3, b.VIV_CAGR_5, b.VIV_CAGR_10, b.VIV_VOL_5, b.VIV_P1000, b.VIV_POB_CAGR_5, ' ||
         'b.SAL_LOG_POB, b.SAL_LOG_ST, b.SAL_CAGR_1, b.SAL_CAGR_3, b.SAL_CAGR_5, b.SAL_CAGR_10, b.SAL_VOL_5, b.SAL_P1000, b.SAL_POB_CAGR_5, ' ||
         'b.PAR_LOG_POB, b.PAR_LOG_ST, b.PAR_CAGR_1, b.PAR_CAGR_3, b.PAR_CAGR_5, b.PAR_CAGR_10, b.PAR_VOL_5, b.PAR_P1000, b.PAR_POB_CAGR_5 ' ||
-        'FROM PV_BASE_MODELOS b), ' ||
+        'FROM PV_BASE_MODELOS b' ||
+        CASE WHEN V_COD IS NOT NULL THEN ' WHERE b.COD_INE = ''' || V_COD || '''' ELSE '' END ||
+        '), ' ||
         'estp AS (' ||
         'SELECT p.*, p.POBLACION_2025 * p.FACTOR_M3 AS POB_Y, ' ||
         'LN(GREATEST(p.POBLACION_2025 * p.FACTOR_M3, 0.5)) AS LOG_POB_Y, ' ||

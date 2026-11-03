@@ -1,0 +1,2604 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Plataforma LoDCORE · Capacidad Territorial Comunidad de Madrid</title>
+  
+  <!-- Leaflet CSS & JS para Mapa Geográfico Realista -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --tx: #0f172a;
+      --mu: #64748b;
+      --bd: #e2e8f0;
+      --hd: #0f172a;
+      --sb: #1e293b;
+      --ac: #2563eb;
+      --ac-hover: #1d4ed8;
+      --ac-light: #eff6ff;
+      --sea: #f1f5f9;
+      --success: #16a34a;
+      --success-bg: #dcfce7;
+      --warning: #d97706;
+      --warning-bg: #fef3c7;
+      --danger: #dc2626;
+      --danger-bg: #fee2e2;
+      --info: #0284c7;
+      --info-bg: #e0f2fe;
+      --purple: #7c3aed;
+      --purple-bg: #ede9fe;
+      box-sizing: border-box;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--tx);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 13.5px;
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    /* Header */
+    header {
+      background: var(--hd);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 22px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: 0.2px;
+    }
+    .header-logo svg { flex: none; width: 24px; height: 24px; }
+    .header-title-box { display: flex; flex-direction: column; }
+    .header-title-box small { color: #94a3b8; font-size: 11px; font-weight: 400; }
+    .sp { flex: 1; }
+    .header-pills { display: flex; align-items: center; gap: 10px; }
+    .status-pill {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #38bdf8;
+      font-size: 11.5px;
+      padding: 4px 10px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .status-dot { width: 7px; height: 7px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 6px #22c55e; }
+    .aud-select {
+      background: #1e293b;
+      color: #fff;
+      border: 1px solid #475569;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+    }
+    .aud-select option { color: #000; background: #fff; }
+
+    /* App container */
+    .app { display: flex; min-height: calc(100vh - 54px); }
+    
+    /* Sidebar Navigation */
+    nav {
+      background: var(--sb);
+      width: 230px;
+      padding: 14px 10px;
+      flex: none;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      box-shadow: 2px 0 6px rgba(0,0,0,0.03);
+    }
+    .nav-group-title {
+      color: #64748b;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding: 10px 10px 4px;
+    }
+    nav button {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      text-align: left;
+      background: none;
+      border: 0;
+      color: #cbd5e1;
+      padding: 8.5px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.15s ease;
+    }
+    nav button:hover {
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+    }
+    nav button.on {
+      background: var(--ac);
+      color: #ffffff;
+      font-weight: 600;
+      box-shadow: 0 2px 6px rgba(37,99,235,0.35);
+    }
+
+    /* Main Content */
+    main {
+      flex: 1;
+      padding: 18px 24px;
+      min-width: 0;
+      overflow-y: auto;
+    }
+    
+    /* Common UI Elements */
+    h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; color: #0f172a; }
+    .page-subtitle { color: var(--mu); font-size: 13px; margin-bottom: 16px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--bd);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    
+    /* Theoretical Concept Alert Box */
+    .theory-box {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-left: 4px solid var(--success);
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin-bottom: 14px;
+      font-size: 12.5px;
+      line-height: 1.45;
+      color: #166534;
+    }
+    .theory-box b { color: #14532d; }
+
+    /* KPI Cards */
+    .kpi-card {
+      background: #fff;
+      border: 1px solid var(--bd);
+      border-radius: 8px;
+      padding: 14px 16px;
+      border-left: 4px solid var(--ac);
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .kpi-card.green { border-left-color: var(--success); }
+    .kpi-card.amber { border-left-color: var(--warning); }
+    .kpi-card.red { border-left-color: var(--danger); }
+    .kpi-card.purple { border-left-color: var(--purple); }
+    .kpi-label { font-size: 11px; color: var(--mu); font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+    .kpi-val { font-size: 22px; font-weight: 800; color: #0f172a; }
+    .kpi-sub { font-size: 11px; color: var(--mu); }
+
+    /* Filter Bar */
+    .bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 14px;
+      align-items: flex-end;
+      background: var(--card);
+      border: 1px solid var(--bd);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+    .bar label {
+      display: flex;
+      flex-direction: column;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--mu);
+      gap: 4px;
+    }
+    .bar input[type=text], .bar select, select.ctrl-input, input.ctrl-input {
+      background: var(--bg);
+      border: 1px solid var(--bd);
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: 13px;
+      min-width: 140px;
+      color: var(--tx);
+      outline: none;
+    }
+    .bar input[type=text]:focus, .bar select:focus {
+      border-color: var(--ac);
+      box-shadow: 0 0 0 2px rgba(37,99,235,0.15);
+    }
+    .bar input[type=range] { width: 110px; accent-color: var(--ac); cursor: pointer; }
+    
+    /* Buttons */
+    .btn {
+      background: var(--ac);
+      color: #fff;
+      border: 0;
+      border-radius: 6px;
+      padding: 7px 14px;
+      cursor: pointer;
+      font-size: 12.5px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s ease;
+    }
+    .btn:hover { background: var(--ac-hover); }
+    .btn.o { background: transparent; color: var(--ac); border: 1px solid var(--ac); }
+    .btn.o:hover { background: var(--ac-light); }
+    .btn.sm { padding: 4px 8px; font-size: 11.5px; }
+    
+    /* Badges */
+    .bd {
+      display: inline-block;
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 10px;
+      border: 1px solid var(--bd);
+      color: var(--mu);
+      background: #f8fafc;
+      white-space: nowrap;
+    }
+    .bd.obs { background: #e0f2fe; border-color: #bae6fd; color: #0369a1; }
+    .bd.est { background: #fef3c7; border-color: #fde68a; color: #92400e; }
+    .bd.proy { background: #dcfce7; border-color: #bbf7d0; color: #166534; }
+    .bd.sim { background: #fee2e2; border-color: #fecaca; color: #991b1b; }
+    
+    .badge-alert {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin: 2px 0;
+    }
+    .badge-alert.red { background: var(--danger-bg); color: var(--danger); border: 1px solid #fca5a5; }
+    .badge-alert.amber { background: var(--warning-bg); color: var(--warning); border: 1px solid #fcd34d; }
+    .badge-alert.green { background: var(--success-bg); color: var(--success); border: 1px solid #86efac; }
+    .badge-alert.blue { background: var(--info-bg); color: var(--info); border: 1px solid #7dd3fc; }
+
+    /* Map Workspace & Leaflet */
+    .map-grid { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 14px; }
+    .map-container-box {
+      position: relative;
+      background: #e2e8f0;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 560px;
+    }
+    .map-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--bd);
+      z-index: 500;
+    }
+    .map-mode-pills { display: flex; gap: 6px; }
+    .map-pill-btn {
+      background: #f1f5f9;
+      border: 1px solid var(--bd);
+      color: var(--tx);
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .map-pill-btn.active {
+      background: var(--ac);
+      color: #fff;
+      border-color: var(--ac);
+    }
+    #leaflet_map {
+      flex: 1;
+      width: 100%;
+      height: 520px;
+      background: #f8fafc;
+      z-index: 10;
+    }
+    #svg_map_container {
+      display: none;
+      flex: 1;
+      width: 100%;
+      height: 520px;
+      background: var(--sea);
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    #map_svg { width: 100%; height: 100%; max-height: 520px; }
+
+    /* Custom Leaflet Tooltip */
+    .leaflet-popup-content-wrapper {
+      border-radius: 8px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+      font-size: 12px;
+      line-height: 1.4;
+      padding: 2px;
+    }
+    .leaflet-popup-content { margin: 8px 12px; }
+    
+    /* Progress bars */
+    .b {
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+    .b i {
+      display: block;
+      height: 100%;
+      background: var(--ac);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+    .b.green i { background: var(--success); }
+    .b.amber i { background: var(--warning); }
+    .b.red i { background: var(--danger); }
+    
+    .m {
+      display: grid;
+      grid-template-columns: 125px 1fr 34px;
+      gap: 8px;
+      align-items: center;
+      font-size: 12px;
+      margin: 5px 0;
+    }
+    
+    /* Lists and Tables */
+    ul.l { padding-left: 0; list-style: none; margin: 6px 0; }
+    ul.l li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--bd);
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background 0.12s;
+    }
+    ul.l li:hover { background: #f8fafc; }
+    
+    .sc { overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; text-align: left; font-size: 12.5px; }
+    td, th { padding: 9px 12px; border-bottom: 1px solid var(--bd); }
+    th {
+      background: #f8fafc;
+      color: var(--mu);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    tr:hover td { background: #f8fafc; }
+    
+    /* Variable Selector */
+    .vars label {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 5px 6px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .vars label:hover { background: #f8fafc; }
+    .leg {
+      height: 10px;
+      border-radius: 5px;
+      margin: 8px 0 3px;
+    }
+    .leg-ramp {
+      background: linear-gradient(90deg, #dc2626 0%, #d97706 40%, #16a34a 100%);
+    }
+    .leg-blue {
+      background: linear-gradient(90deg, #dbeafe 0%, #60a5fa 50%, #1d4ed8 100%);
+    }
+    
+    /* Chips */
+    .ch {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--ac-light);
+      border: 1px solid #bfdbfe;
+      color: var(--ac);
+      font-weight: 600;
+      border-radius: 16px;
+      padding: 4px 10px;
+      margin: 3px;
+      font-size: 12px;
+    }
+    .ch a { color: var(--ac); text-decoration: none; font-weight: 700; }
+    
+    /* Sections visibility */
+    .v { display: none; }
+    .v.on { display: block; animation: fadeIn 0.15s ease-in; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* SHAP Waterfall / Bars */
+    .shap-row {
+      display: grid;
+      grid-template-columns: 140px 1fr 65px;
+      gap: 8px;
+      align-items: center;
+      font-size: 12px;
+      margin: 6px 0;
+    }
+    .shap-bar-wrap {
+      display: flex;
+      height: 14px;
+      background: #f1f5f9;
+      border-radius: 7px;
+      position: relative;
+      align-items: center;
+    }
+    .shap-center-line {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #94a3b8;
+      z-index: 2;
+    }
+    .shap-bar-pos {
+      position: absolute;
+      left: 50%;
+      height: 100%;
+      background: #22c55e;
+      border-radius: 0 6px 6px 0;
+    }
+    .shap-bar-neg {
+      position: absolute;
+      right: 50%;
+      height: 100%;
+      background: #ef4444;
+      border-radius: 6px 0 0 6px;
+    }
+
+    /* Radar Chart Container */
+    .radar-box {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 10px 0;
+    }
+
+    /* Algorithm Card */
+    .algo-card {
+      background: #fff;
+      border: 1px solid var(--bd);
+      border-radius: 8px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .algo-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--ac-light);
+      color: var(--ac);
+      text-transform: uppercase;
+      align-self: flex-start;
+    }
+    .algo-title { font-weight: 700; font-size: 13.5px; color: #0f172a; }
+    .algo-desc { font-size: 12px; color: var(--mu); line-height: 1.45; }
+    .algo-tech { font-size: 11px; color: #475569; background: #f8fafc; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--bd); }
+
+    @media(max-width: 900px) {
+      .app { flex-direction: column; }
+      nav { width: auto; flex-direction: row; overflow-x: auto; padding: 6px; }
+      nav button { width: auto; white-space: nowrap; }
+      .nav-group-title { display: none; }
+      .map-grid { grid-template-columns: 1fr; }
+      .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <div class="header-logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.2"><path d="M12 2l8 5v10l-8 5-8-5V7z"/><circle cx="12" cy="12" r="3.5"/></svg>
+    <div class="header-title-box">
+      <span>LoDCORE · Capacidad Territorial Comunidad de Madrid</span>
+      <small>Sistema Predictivo & Recomendador Explicable · Municipios &lt;50.000 hab.</small>
+    </div>
+  </div>
+  <span class="sp"></span>
+  <div class="header-pills">
+    <div class="status-pill"><span class="status-dot"></span> 41 Municipios Activos · INE & CAM 2026</div>
+    <select class="aud-select" id="aud" aria-label="Perfil de usuario">
+      <option value="ciudadano">👤 Perfil Ciudadano</option>
+      <option value="admin">🏛️ Planificadores CAM / Institucional</option>
+      <option value="inversor">📈 Inversor / Promotor</option>
+    </select>
+  </div>
+</header>
+
+<div class="app">
+  <!-- Navigation Sidebar -->
+  <nav>
+    <div class="nav-group-title">Portal Ciudadano</div>
+    <button class="on" data-v="mapa"><span>🗺️</span> Mapa Territorial</button>
+    <button data-v="quiz"><span>🎯</span> Quiz & Recomendador</button>
+    <button data-v="comp"><span>⚖️</span> Comparador</button>
+    <button data-v="ficha"><span>📋</span> Ficha Municipal & SHAP</button>
+
+    <div class="nav-group-title">Panel Institucional</div>
+    <button data-v="dashboard"><span>📊</span> Cuadro de Mando</button>
+    <button data-v="simulador"><span>🧮</span> Simulador What-If</button>
+    <button data-v="escenarios"><span>📈</span> Escenarios Crecimiento</button>
+
+    <div class="nav-group-title">Metodología & Modelos</div>
+    <button data-v="modelos"><span>⚙️</span> Los 5 Modelos ML</button>
+    <button data-v="fuentes"><span>📚</span> Fuentes Oficiales</button>
+  </nav>
+
+  <!-- Main Views Container -->
+  <main>
+
+    <!-- ========================================== -->
+    <!-- VIEW 1: MAPA INTERACTIVO (P1 / P5)         -->
+    <!-- ========================================== -->
+    <section class="v on" id="mapa">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <div>
+          <h2>Mapa Territorial de Capacidad de Acogida</h2>
+          <div class="page-subtitle">Visualizador geoespacial de la Comunidad de Madrid con límites oficiales, semáforo ICA y detección de cuellos de botella</div>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <span class="bd obs">Observado</span>
+          <span class="bd est">Estimado</span>
+          <span class="bd proy">Proyectado</span>
+        </div>
+      </div>
+
+      <!-- Alerta de Hipótesis Metodológica -->
+      <div class="theory-box">
+        <b>💡 Hipótesis de Complementariedad No Compensatoria:</b> El atractivo residencial (precio bajo o naturaleza) no equivale a la capacidad real de acogida. La carencia severa de un servicio crítico (atención primaria o plazas escolares) actúa como <b>cuello de botella limitante</b> que no puede compensarse con otros factores favorables.
+      </div>
+
+      <!-- Barra de Filtros Rápidos -->
+      <div class="bar">
+        <label>Buscar municipio<input type="text" id="q" placeholder="Ej. Buitrago, Robledo..."></label>
+        <label>Comarca
+          <select id="f_comarca">
+            <option value="all">Todas las comarcas</option>
+            <option value="Sierra Norte">Sierra Norte</option>
+            <option value="Guadarrama">Sierra de Guadarrama</option>
+            <option value="Sierra Oeste">Sierra Oeste</option>
+            <option value="Cuenca Alta">Cuenca Alta del Manzanares</option>
+            <option value="Las Vegas">Comarca de Las Vegas</option>
+            <option value="Henares">Cuenca del Henares</option>
+            <option value="Comarca Sur">Comarca Sur</option>
+            <option value="Medio Jarama">Cuenca del Medio Jarama</option>
+          </select>
+        </label>
+        <label>Población máx: <span id="pv">50</span> mil<input type="range" id="pop" min="1" max="50" step="1" value="50"></label>
+        <label>Precio máx: <span id="prv">3500</span> €/m²<input type="range" id="pr" min="1100" max="3500" step="100" value="3500"></label>
+        <label>Transporte mín: <span id="tv">0</span>/100<input type="range" id="tr" min="0" max="80" step="5" value="0"></label>
+        <label>Cuello de botella
+          <select id="f_limit">
+            <option value="all">Cualquier factor</option>
+            <option value="Sanidad">🩺 Sanidad</option>
+            <option value="Educación">🏫 Educación</option>
+            <option value="Vivienda">🏠 Vivienda</option>
+          </select>
+        </label>
+        <button class="btn o" id="rst">Limpiar Filtros</button>
+      </div>
+
+      <!-- Grid: Mapa + Panel Lateral -->
+      <div class="map-grid">
+        <!-- Leaflet Map Container -->
+        <div class="map-container-box">
+          <div class="map-top-bar">
+            <div style="font-size:12px; font-weight:700; color:#0f172a;">
+              <span>🗺️ Capa Base Geográfica:</span>
+            </div>
+            <div class="map-mode-pills">
+              <button class="map-pill-btn active" id="btn_layer_street">🗺️ Callejero Detallado</button>
+              <button class="map-pill-btn" id="btn_layer_ign">🇪🇸 IGN España</button>
+              <button class="map-pill-btn" id="btn_layer_esri">🏛️ Gris Ejecutivo</button>
+              <button class="map-pill-btn" id="btn_layer_sat">🛰️ Satélite Aéreo</button>
+              <button class="map-pill-btn" id="btn_layer_svg">📍 Vectorial SVG</button>
+            </div>
+          </div>
+
+          <!-- Leaflet Map Div -->
+          <div id="leaflet_map"></div>
+
+          <!-- Fallback SVG Map Div (for offline or schematic view) -->
+          <div id="svg_map_container">
+            <svg id="map_svg" viewBox="0 0 600 640" role="img" aria-label="Mapa de la Comunidad de Madrid"></svg>
+          </div>
+        </div>
+
+        <!-- Panel Lateral: Variable activa, Ficha seleccionada y Top 5 -->
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <!-- Selector de Variable -->
+          <div class="card vars">
+            <div class="card-title">Capa Activa en el Mapa</div>
+            <div id="vars">
+              <label><input type="radio" name="v" value="ica" checked> <b>Índice ICA Global (Semáforo)</b> <span class="bd est">Est.</span></label>
+              <label><input type="radio" name="v" value="colapso"> Capacidad Neta sin Colapso <span class="bd proy">Proy.</span></label>
+              <label><input type="radio" name="v" value="limit"> Cuello de Botella Dominante <span class="bd obs">Obs.</span></label>
+              <label><input type="radio" name="v" value="prc"> Precio Vivienda (€/m²) <span class="bd est">Est.</span></label>
+              <label><input type="radio" name="v" value="trans"> Transporte & Conectividad <span class="bd obs">Obs.</span></label>
+              <label><input type="radio" name="v" value="serv"> Dotación de Servicios <span class="bd obs">Obs.</span></label>
+              <label><input type="radio" name="v" value="amb"> Calidad Ambiental <span class="bd obs">Obs.</span></label>
+              <label><input type="radio" name="v" value="pop"> Población Padrón 2025 <span class="bd obs">Obs.</span></label>
+            </div>
+            <div class="leg leg-ramp" id="leg_bar"></div>
+            <div style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--mu);">
+              <span id="lmin">Baja (&lt;40)</span>
+              <span id="lmax">Alta (≥60)</span>
+            </div>
+          </div>
+
+          <!-- Mini Ficha del Municipio Seleccionado -->
+          <div class="card" id="fic">
+            <!-- Rellenado dinámicamente -->
+          </div>
+
+          <!-- Top 5 Filtrado -->
+          <div class="card">
+            <div class="card-title">Top 5 con los filtros actuales</div>
+            <ul class="l" id="top"></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ========================================== -->
+    <!-- VIEW 2: QUIZ & RECOMENDADOR (P2)           -->
+    <!-- ========================================== -->
+    <section class="v" id="quiz">
+      <h2>Quiz de Preferencias & Recomendador Explicable</h2>
+      <div class="page-subtitle">Algoritmo multivariable de recomendación ciudadana con explicabilidad (fortalezas clave y renuncias asumidas)</div>
+
+      <!-- Presets de Perfil Rápido -->
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-title">1. Elige un Arquetipo de Usuario o Configura tus Preferencias</div>
+        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+          <button class="btn o sm quiz-preset-btn on" data-preset="fam">👨‍👩‍👧 Familia con hijos</button>
+          <button class="btn o sm quiz-preset-btn" data-preset="jov">💼 Joven profesional</button>
+          <button class="btn o sm quiz-preset-btn" data-preset="may">👵 Senior / Mayores</button>
+          <button class="btn o sm quiz-preset-btn" data-preset="tele">💻 Teletrabajo & Naturaleza</button>
+          <button class="btn o sm quiz-preset-btn" data-preset="inv">📈 Inversor / Promotor</button>
+          <button class="btn o sm quiz-preset-btn" data-preset="adm">🏛️ Gestor Territorial CAM</button>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:14px;">
+        <!-- Preguntas Rápidas del Quiz -->
+        <div class="card">
+          <div class="card-title">2. Filtros y Restricciones del Hogar</div>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div>
+              <label style="font-weight:600; font-size:12px; display:block; margin-bottom:4px;">Presupuesto de compra máximo:</label>
+              <select id="qz_budget" class="ctrl-input" style="width:100%;">
+                <option value="1600">Muy económico (Hasta 1.600 €/m²)</option>
+                <option value="2200" selected>Asequible (Hasta 2.200 €/m²)</option>
+                <option value="2800">Medio (Hasta 2.800 €/m²)</option>
+                <option value="4000">Sin límite / Calidad alta (&gt; 2.800 €/m²)</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-weight:600; font-size:12px; display:block; margin-bottom:4px;">Tamaño de municipio deseado:</label>
+              <select id="qz_size" class="ctrl-input" style="width:100%;">
+                <option value="any">Cualquier tamaño</option>
+                <option value="rural">Pueblo rural tranquilo (&lt; 5.000 hab.)</option>
+                <option value="semi">Semiurbano con servicios (5.000 - 20.000 hab.)</option>
+                <option value="urbano">Ciudad consolidada (20.000 - 50.000 hab.)</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-weight:600; font-size:12px; display:block; margin-bottom:4px;">Tiempo de viaje máximo a Madrid centro:</label>
+              <select id="qz_time" class="ctrl-input" style="width:100%;">
+                <option value="any">Indiferente / Priorizo calidad de vida</option>
+                <option value="45">Menos de 45 minutos</option>
+                <option value="60" selected>Menos de 60 minutos</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-weight:600; font-size:12px; display:block; margin-bottom:4px;">¿Transporte público frecuente sin coche imprescindible?:</label>
+              <select id="qz_nocar" class="ctrl-input" style="width:100%;">
+                <option value="no">No, dispongo de vehículo propio</option>
+                <option value="yes">Sí, imprescindible tren Cercanías o bus frecuente</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sliders de Ponderación Interactivos -->
+        <div class="card">
+          <div class="card-title">3. Ponderación de Dimensiones Territoriales</div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:12px;"><span>Asequibilidad de vivienda</span><b id="wv_viv">25%</b></div>
+              <input type="range" id="w_viv" min="0" max="50" value="25" style="width:100%;">
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:12px;"><span>Sanidad y atención médica</span><b id="wv_san">30%</b></div>
+              <input type="range" id="w_san" min="0" max="50" value="30" style="width:100%;">
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:12px;"><span>Educación y colegios</span><b id="wv_esc">30%</b></div>
+              <input type="range" id="w_esc" min="0" max="50" value="30" style="width:100%;">
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:12px;"><span>Transporte y conectividad</span><b id="wv_tra">10%</b></div>
+              <input type="range" id="w_tra" min="0" max="50" value="10" style="width:100%;">
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:12px;"><span>Medioambiente y naturaleza</span><b id="wv_amb">5%</b></div>
+              <input type="range" id="w_amb" min="0" max="50" value="5" style="width:100%;">
+            </div>
+            <div style="margin-top:4px; font-size:11px; color:var(--mu); text-align:right;">
+              * Pesos normalizados automáticamente al 100%
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resultados del Recomendador con Explicabilidad -->
+      <div class="card">
+        <div class="card-title">
+          <span>Municipios Recomendados según tu Vector de Preferencias</span>
+          <span style="font-size:12px; color:var(--mu); font-weight:normal;" id="rec_count">Mostrando Top 6</span>
+        </div>
+        <div id="rec_cards_grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap:14px;">
+          <!-- Tarjetas explicables inyectadas por JS -->
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ========================================== -->
+    <!-- VIEW 3: COMPARADOR MULTIDIMENSIONAL (P3)   -->
+    <!-- ========================================== -->
+    <section class="v" id="comp">
+      <h2>Comparador Multidimensional de Municipios</h2>
+      <div class="page-subtitle">Comparativa lado a lado con polígono radar superpuesto, detección de cuellos de botella y barras relativas</div>
+
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-title">Municipios en Comparación (Máximo 4)</div>
+        <div id="chosen" style="margin-bottom:10px;"></div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <select id="addsel" class="ctrl-input"></select>
+          <button class="btn" id="addbtn">+ Añadir a la Comparativa</button>
+          <button class="btn o" id="clr">Vaciar Selección</button>
+        </div>
+      </div>
+
+      <!-- Gráfico Radar Comparativo Superpuesto -->
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-title">Perfil Multidimensional Radar (Superposición de Municipios)</div>
+        <div class="radar-box">
+          <svg id="comp_radar_svg" width="380" height="300" viewBox="0 0 380 300"></svg>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="sc">
+          <table id="ctab"></table>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ========================================== -->
+    <!-- VIEW 4: FICHA MUNICIPAL & SHAP (P4)        -->
+    <!-- ========================================== -->
+    <section class="v" id="ficha">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <div>
+          <h2>Ficha Municipal Detallada & Diagnóstico SHAP</h2>
+          <div class="page-subtitle">Indicadores oficiales, factores que impulsan o limitan la capacidad y trazabilidad de fuentes públicas</div>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <label style="font-size:12px; font-weight:600;">Seleccionar Municipio:</label>
+          <select id="ficha_selector" class="ctrl-input"></select>
+        </div>
+      </div>
+
+      <!-- Cabecera de la Ficha -->
+      <div class="card" id="ficha_header_card" style="margin-bottom:14px;"></div>
+
+      <!-- Grid de Ficha: 2 columnas -->
+      <div class="grid-2" style="margin-bottom:14px;">
+        <!-- Diagnóstico de Cuellos de Botella y Holgura -->
+        <div class="card">
+          <div class="card-title">Diagnóstico de Capacidad & Holgura de Servicios</div>
+          <div id="ficha_bottleneck_box"></div>
+        </div>
+
+        <!-- Radar Chart Individual del Municipio -->
+        <div class="card">
+          <div class="card-title">
+            <span>Perfil Territorial Multidimensional</span>
+            <span class="bd obs">Vs Media Regional</span>
+          </div>
+          <div class="radar-box">
+            <svg id="ficha_radar_svg" width="340" height="280" viewBox="0 0 340 280"></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Explicabilidad SHAP: Factores que suman y restan -->
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-title">
+          <span>Explicabilidad SHAP (Contribución Matemática de Factores)</span>
+          <span class="bd est">XGBoost + SHAP</span>
+        </div>
+        <div style="font-size:12px; color:var(--mu); margin-bottom:10px;">
+          Desviación respecto a la línea base regional (ICA Medio = 44.8). Los factores en verde aumentan la capacidad del municipio; los factores en rojo actúan como limitantes críticos.
+        </div>
+        <div id="ficha_shap_box"></div>
+      </div>
+
+      <!-- Tabla Completa de Indicadores y Trazabilidad -->
+      <div class="card">
+        <div class="card-title">Indicadores Oficiales & Metadatos de Trazabilidad</div>
+        <div class="sc">
+          <table id="ficha_table_indicadores">
+            <thead>
+              <tr>
+                <th>Dimensión</th>
+                <th>Indicador Oficial</th>
+                <th>Valor Municipal</th>
+                <th>Media Regional (&lt;50k)</th>
+                <th>Tipo de Dato</th>
+                <th>Fuente Oficial Trazable</th>
+              </tr>
+            </thead>
+            <tbody id="ficha_table_tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ========================================== -->
+    <!-- VIEW 5: CUADRO DE MANDO REGIONAL (P6)      -->
+    <!-- ========================================== -->
+    <section class="v" id="dashboard">
+      <h2>Cuadro de Mando Regional · Administración Pública</h2>
+      <div class="page-subtitle">Visión analítica agregada territorial para la planificación de equipamientos e inversión de la Comunidad de Madrid</div>
+
+      <!-- KPIs Ejecutivos Globales -->
+      <div class="grid-4" style="margin-bottom:16px;">
+        <div class="kpi-card">
+          <span class="kpi-label">Municipios Analizados</span>
+          <span class="kpi-val">41</span>
+          <span class="kpi-sub">Municipios con &lt; 50.000 habitantes</span>
+        </div>
+        <div class="kpi-card green">
+          <span class="kpi-label">ICA Medio Territorial</span>
+          <span class="kpi-val" id="db_ica_medio">44.8 / 100</span>
+          <span class="kpi-sub">Nivel de idoneidad global medio</span>
+        </div>
+        <div class="kpi-card amber">
+          <span class="kpi-label">Acogida Neta Inmediata</span>
+          <span class="kpi-val" id="db_acogida_total">14.380 hab.</span>
+          <span class="kpi-sub">Capacidad absorbible sin colapso de servicios</span>
+        </div>
+        <div class="kpi-card red">
+          <span class="kpi-label">Inversión para Desbloqueo</span>
+          <span class="kpi-val" id="db_capex_total">38.4 M€</span>
+          <span class="kpi-sub">Coste estimado para solventar cuellos de botella</span>
+        </div>
+      </div>
+
+      <!-- Distribución de Cuellos de Botella -->
+      <div class="grid-2" style="margin-bottom:16px;">
+        <div class="card">
+          <div class="card-title">Matriz Regional de Cuellos de Botella</div>
+          <div style="font-size:12px; color:var(--mu); margin-bottom:12px;">¿Cuál es el factor principal que impide a cada municipio acoger más familias?</div>
+          <div style="display:flex; flex-direction:column; gap:12px;" id="db_bottleneck_distribution"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Resumen por Coronas y Comarcas</div>
+          <div style="font-size:12px; color:var(--mu); margin-bottom:8px;">Balance de acogida y cuellos de botella por zona geográfica</div>
+          <div class="sc">
+            <table id="db_comarca_table">
+              <thead>
+                <tr>
+                  <th>Comarca</th>
+                  <th>Muns.</th>
+                  <th>Población</th>
+                  <th>ICA Medio</th>
+                  <th>Cuello Predom.</th>
+                  <th>Acogida Neta</th>
+                </tr>
+              </thead>
+              <tbody id="db_comarca_tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ranking de Municipios según Holgura de Inversión -->
+      <div class="card">
+        <div class="card-title">Inventario Territorial de Municipios &lt; 50.000 hab.</div>
+        <div class="sc">
+          <table id="db_muns_table">
+            <thead>
+              <tr>
+                <th>Municipio</th>
+                <th>Comarca</th>
+                <th>Población</th>
+                <th>ICA</th>
+                <th>Cuello de Botella</th>
+                <th>Acogida sin Colapso</th>
+                <th>Hab/Médico</th>
+                <th>Ocupación Escolar</th>
+                <th>Precio m²</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="db_muns_tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ========================================== -->
+    <!-- VIEW 6: SIMULADOR DE INVERSIONES (P7)      -->
+    <!-- ========================================== -->
+    <section class="v" id="simulador">
+      <h2>Simulador Territorial What-If de Inversiones Públicas</h2>
+      <div class="page-subtitle">Simulación interactiva de asignación presupuestaria con restricciones, costes unitarios oficiales y bandas de incertidumbre</div>
+
+      <!-- Parámetros del Simulador -->
+      <div class="grid-3" style="margin-bottom:14px;">
+        <div class="card">
+          <div class="card-title">1. Presupuesto Público Asignable</div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; justify-content:space-between; font-size:13px;">
+              <span>Fondo de Cohesión Territorial:</span>
+              <b id="sim_budget_val" style="color:var(--ac); font-size:16px;">15.0 M€</b>
+            </div>
+            <input type="range" id="sim_budget" min="1" max="50" step="1" value="15" style="width:100%;">
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--mu);">
+              <span>1 M€</span>
+              <span>25 M€</span>
+              <span>50 M€</span>
+            </div>
+            <label style="font-size:11.5px; font-weight:600; margin-top:8px;">Banda de Incertidumbre:</label>
+            <select id="sim_uncertainty" class="ctrl-input">
+              <option value="0.85">🔴 Conservadora (-15% de efectividad)</option>
+              <option value="1.0" selected>🟡 Escenario Esperado (Base)</option>
+              <option value="1.15">🟢 Favorable (+15% de economías de escala)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">2. Costes Paramétricos Unitarios</div>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:12px;">
+                <span>Coste Médico AP + Equipamiento:</span>
+                <b id="sim_cost_med_val">450.000 €</b>
+              </div>
+              <input type="range" id="sim_cost_med" min="300000" max="600000" step="25000" value="450000" style="width:100%;">
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:12px;">
+                <span>Coste Plaza Escolar / Aula:</span>
+                <b id="sim_cost_esc_val">12.000 €</b>
+              </div>
+              <input type="range" id="sim_cost_esc" min="8000" max="18000" step="1000" value="12000" style="width:100%;">
+            </div>
+            <div style="font-size:11px; color:var(--mu);">
+              * Calibrado según módulos oficiales de la Consejería de Sanidad y Educación de la CAM.
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">3. Criterio de Priorización Política</div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <label style="display:flex; gap:8px; align-items:center; cursor:pointer; font-size:12.5px;">
+              <input type="radio" name="sim_strat" value="eficiencia" checked>
+              <b>Máxima Eficiencia Demográfica</b> (Maximizar familias acogidas)
+            </label>
+            <label style="display:flex; gap:8px; align-items:center; cursor:pointer; font-size:12.5px;">
+              <input type="radio" name="sim_strat" value="cohesion">
+              <b>Cohesión Rural</b> (Priorizar municipios &lt; 5.000 hab. en Sierra)
+            </label>
+            <label style="display:flex; gap:8px; align-items:center; cursor:pointer; font-size:12.5px;">
+              <input type="radio" name="sim_strat" value="rescate">
+              <b>Rescate de Alertas Rojas</b> (Desbloquear municipios con colapso = 0)
+            </label>
+            <button class="btn" id="sim_run_btn" style="margin-top:8px;">Reejecutar Simulación</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPIs del Impacto Simulado -->
+      <div class="grid-4" style="margin-bottom:14px;">
+        <div class="kpi-card green">
+          <span class="kpi-label">Nuevas Familias Acogibles</span>
+          <span class="kpi-val" id="sim_out_hab">+5.420</span>
+          <span class="kpi-sub">Incremento neto sobre la capacidad regional</span>
+        </div>
+        <div class="kpi-card blue">
+          <span class="kpi-label">Plazas Médicas Financiadas</span>
+          <span class="kpi-val" id="sim_out_med">22</span>
+          <span class="kpi-sub">Médicos de Atención Primaria asignados</span>
+        </div>
+        <div class="kpi-card purple">
+          <span class="kpi-label">Plazas Escolares Creadas</span>
+          <span class="kpi-val" id="sim_out_esc">425</span>
+          <span class="kpi-sub">Puestos escolares en CEIPs comarcales</span>
+        </div>
+        <div class="kpi-card amber">
+          <span class="kpi-label">Municipios Desbloqueados</span>
+          <span class="kpi-val" id="sim_out_muns">14</span>
+          <span class="kpi-sub">Salen de alerta roja de saturación</span>
+        </div>
+      </div>
+
+      <!-- Tabla de Asignación de Inversión por Municipio -->
+      <div class="card">
+        <div class="card-title">Plan de Inversiones Simulado y Municipios Priorizados</div>
+        <div class="sc">
+          <table id="sim_table_results">
+            <thead>
+              <tr>
+                <th>Municipio</th>
+                <th>Comarca</th>
+                <th>Cuello Original</th>
+                <th>Inversión Asignada</th>
+                <th>Médicos Nuevos</th>
+                <th>Aulas/Plazas Nuevas</th>
+                <th>Capacidad Anterior</th>
+                <th>Nueva Capacidad</th>
+                <th>Ganancia Neta</th>
+              </tr>
+            </thead>
+            <tbody id="sim_tbody_results"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ========================================== -->
+    <!-- VIEW 7: ESCENARIOS DE CRECIMIENTO (P8)     -->
+    <!-- ========================================== -->
+    <section class="v" id="escenarios">
+      <h2>Escenarios de Crecimiento & Estrés de Servicios (+5% / +10%)</h2>
+      <div class="page-subtitle">Test de estrés demográfico: simulación de la presión generada por incrementos del 5% o 10% de población sobre centros de salud y colegios</div>
+
+      <!-- Controles del Escenario -->
+      <div class="bar">
+        <label>Escenario de Crecimiento:
+          <select id="esc_growth_rate" class="ctrl-input">
+            <option value="0.05" selected>📈 Crecimiento Moderado (+5% de población)</option>
+            <option value="0.10">🚀 Crecimiento Intensivo (+10% de población)</option>
+          </select>
+        </label>
+        <label>Filtrar por Comarca:
+          <select id="esc_filter_comarca" class="ctrl-input">
+            <option value="all">Todas las comarcas</option>
+            <option value="Sierra Norte">Sierra Norte</option>
+            <option value="Guadarrama">Sierra de Guadarrama</option>
+            <option value="Sierra Oeste">Sierra Oeste</option>
+            <option value="Cuenca Alta">Cuenca Alta</option>
+            <option value="Las Vegas">Las Vegas</option>
+            <option value="Henares">Henares</option>
+            <option value="Comarca Sur">Comarca Sur</option>
+            <option value="Medio Jarama">Medio Jarama</option>
+          </select>
+        </label>
+        <div style="flex:1;"></div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <span class="badge-alert green">● Holgura</span>
+          <span class="badge-alert amber">● Tensión</span>
+          <span class="badge-alert red">● Colapso Crítico</span>
+        </div>
+      </div>
+
+      <!-- Resumen del Estrés Regional -->
+      <div class="grid-3" style="margin-bottom:14px;">
+        <div class="kpi-card blue">
+          <span class="kpi-label">Nuevos Residentes Simulados</span>
+          <span class="kpi-val" id="esc_kpi_nuevos">+21.250</span>
+          <span class="kpi-sub">Llegada proyectada de nuevos empadronados</span>
+        </div>
+        <div class="kpi-card red">
+          <span class="kpi-label">Municipios en Colapso Sanitario</span>
+          <span class="kpi-val" id="esc_kpi_san">18</span>
+          <span class="kpi-sub">Superan el ratio crítico &gt; 1.500 hab/médico</span>
+        </div>
+        <div class="kpi-card amber">
+          <span class="kpi-label">Municipios en Colapso Escolar</span>
+          <span class="kpi-val" id="esc_kpi_esc">12</span>
+          <span class="kpi-sub">Superan el 95% de ocupación en aulas</span>
+        </div>
+      </div>
+
+      <!-- Tabla de Estrés Municipio a Municipio -->
+      <div class="card">
+        <div class="card-title">Matriz de Saturación de Servicios ante el Escenario Seleccionado</div>
+        <div class="sc">
+          <table id="esc_table">
+            <thead>
+              <tr>
+                <th>Municipio</th>
+                <th>Población Actual</th>
+                <th>Población Proyectada</th>
+                <th>Nuevos Pacientes</th>
+                <th>Ratio Sanitario Proy.</th>
+                <th>Alumnos Nuevos (17%)</th>
+                <th>Ocupación Escolar Proy.</th>
+                <th>Estado Sanidad</th>
+                <th>Estado Educación</th>
+                <th>Alerta Global</th>
+              </tr>
+            </thead>
+            <tbody id="esc_tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ========================================== -->
+    <!-- VIEW 8: LOS 5 MODELOS ML & ALGORITMOS      -->
+    <!-- ========================================== -->
+    <section class="v" id="modelos">
+      <h2>Arquitectura de Inteligencia Artificial & Modelos Predictivos</h2>
+      <div class="page-subtitle">Desglose de los 5 algoritmos encadenados para la valoración inmobiliaria, grafos de transporte, series temporales y explicabilidad SHAP</div>
+
+      <div class="grid-2" style="margin-bottom:16px;">
+        
+        <!-- Modelo 1: AVM -->
+        <div class="algo-card">
+          <span class="algo-badge">Modelo 1 · Mercado Inmobiliario</span>
+          <div class="algo-title">AVM Inmobiliario (Gradient Boosting / Random Forest)</div>
+          <div class="algo-desc">
+            Estima el valor razonable por metro cuadrado (€/m²) en compra y alquiler, así como la tasa de esfuerzo financiero familiar en municipios de baja densidad con escasa oferta comercial.
+          </div>
+          <div class="algo-tech">
+            <b>Inputs:</b> Microdatos del Catastro, MIVAU, portal del Notariado y Renta media neta del INE.
+          </div>
+        </div>
+
+        <!-- Modelo 2: PCA + Grafos -->
+        <div class="algo-card">
+          <span class="algo-badge">Modelo 2 · Accesibilidad & Fricción</span>
+          <div class="algo-title">PCA + Grafos Geoespaciales & Isócronas de 30 min</div>
+          <div class="algo-desc">
+            Algoritmos de rutas (Dijkstra / A*) sobre redes GTFS del Consorcio de Transportes (CRTM) y OpenStreetMap para calcular la isócrona de 30 minutos a polos de empleo y hospitales de referencia. PCA reduce decenas de variables a subíndices de capacidad sin multicolinealidad.
+          </div>
+          <div class="algo-tech">
+            <b>Inputs:</b> GTFS CRTM, red de Cercanías Renfe, paradas de autobús e isócronas de viaje.
+          </div>
+        </div>
+
+        <!-- Modelo 3: Proyecciones Demográficas -->
+        <div class="algo-card">
+          <span class="algo-badge">Modelo 3 · Demografía Predictiva</span>
+          <div class="algo-title">Proyección Demográfica con SARIMAX / Prophet</div>
+          <div class="algo-desc">
+            Series temporales multivariantes que proyectan el crecimiento poblacional de cada municipio a 5 y 10 años, incorporando variables exógenas como el encarecimiento de la capital y el esfuerzo inversor municipal.
+          </div>
+          <div class="algo-tech">
+            <b>Inputs:</b> Serie histórica del Padrón Municipal (INE / IESTADIS) y pirámides de edad por cohorte.
+          </div>
+        </div>
+
+        <!-- Modelo 4: XGBoost + SHAP -->
+        <div class="algo-card">
+          <span class="algo-badge">Modelo 4 · Capacidad & What-If</span>
+          <div class="algo-title">Capacidad de Acogida con XGBoost + SHAP Values</div>
+          <div class="algo-desc">
+            Modelo supervisado en panel que cruza la demanda proyectada con la dotación real de servicios para predecir el ICA futuro y cuantificar los cuellos de botella no compensatorios mediante valores SHAP individuales por municipio.
+          </div>
+          <div class="algo-tech">
+            <b>Inputs:</b> Dataset unificado de los 7 factores territoriales y dotaciones de bienestar.
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modelo 5: Recomendador Multicriterio -->
+      <div class="card" style="margin-bottom:16px;">
+        <span class="algo-badge">Modelo 5 · Personalización Ciudadana</span>
+        <div class="algo-title" style="margin-top:4px;">Recomendador Multicriterio: K-Means / GMM + Similitud del Coseno (MCDM)</div>
+        <p style="color:var(--mu); font-size:12.5px; margin:6px 0 10px; line-height:1.5;">
+          Segmenta los 41 municipios de forma no supervisada en <b>3 clústeres territoriales de afinidad</b> y calcula la distancia vectorial respecto a las preferencias del usuario:
+        </p>
+        <div class="grid-3">
+          <div style="background:#f8fafc; border:1px solid var(--bd); border-radius:6px; padding:10px;">
+            <b style="color:var(--ac); font-size:12px;">Clúster 1: Nodos Dinámicos</b>
+            <div style="font-size:11.5px; color:var(--mu); margin-top:3px;">
+              Alta conectividad ferroviaria, servicios consolidados y dinamismo empresarial (Ej. Tres Cantos, Mejorada, Ciempozuelos).
+            </div>
+          </div>
+          <div style="background:#f8fafc; border:1px solid var(--bd); border-radius:6px; padding:10px;">
+            <b style="color:var(--success); font-size:12px;">Clúster 2: Entornos Familiares</b>
+            <div style="font-size:11.5px; color:var(--mu); margin-top:3px;">
+              Alta dotación educativa, colegios con plazas libres, vivienda unifamiliar y calidad ambiental (Ej. Buitrago, Robledo, El Escorial).
+            </div>
+          </div>
+          <div style="background:#f8fafc; border:1px solid var(--bd); border-radius:6px; padding:10px;">
+            <b style="color:var(--purple); font-size:12px;">Clúster 3: Rural Conectado</b>
+            <div style="font-size:11.5px; color:var(--mu); margin-top:3px;">
+              Alta cobertura de fibra, máxima tranquilidad, entorno de montaña y precios muy asequibles (Ej. Montejo, Rascafría, Cercedilla).
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ========================================== -->
+    <!-- VIEW 9: FUENTES OFICIALES & MÉTODO (P9)    -->
+    <!-- ========================================== -->
+    <section class="v" id="fuentes">
+      <h2>Catálogo de Fuentes Oficiales & Metodología</h2>
+      <div class="page-subtitle">Transparencia, fiabilidad, trazabilidad pública y criterios de agregación del Índice de Capacidad de Acogida (ICA)</div>
+
+      <!-- Principios de Gobernanza y UX -->
+      <div class="grid-3" style="margin-bottom:16px;">
+        <div class="card">
+          <div class="card-title">🔒 Transparencia & Trazabilidad</div>
+          <p style="color:var(--mu); font-size:12px; line-height:1.5;">
+            Todas las fuentes son <b>100% públicas y oficiales</b>. Se distingue de forma estricta entre datos <b>Observados</b> (padrones, catastro, registros), <b>Estimados</b> (modelos AVM de precios), <b>Proyectados</b> (cohortes de población) y <b>Simulados</b> (escenarios What-If).
+          </p>
+        </div>
+        <div class="card">
+          <div class="card-title">⚖️ Regla de No Ocultación</div>
+          <p style="color:var(--mu); font-size:12px; line-height:1.5;">
+            <b>Ningún cuello de botella se oculta:</b> aunque un municipio tenga puntuaciones altas en vivienda o medioambiente, si su centro de salud o colegio está colapsado, su capacidad neta de acogida sin inversión adicional es <b>cero</b>.
+          </p>
+        </div>
+        <div class="card">
+          <div class="card-title">🛡️ Privacidad Absoluta</div>
+          <p style="color:var(--mu); font-size:12px; line-height:1.5;">
+            La parametrización del recomendador y del simulador opera <b>exclusivamente en memoria de sesión</b> del navegador. No se recopilan datos de carácter personal identificativo.
+          </p>
+        </div>
+      </div>
+
+      <!-- Catálogo Exhaustivo de Fuentes por Categoría -->
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-title">Catálogo Oficial de Portales y Datasets Públicos</div>
+        <div class="grid-2">
+          
+          <!-- Bloque 1: Demografía -->
+          <div style="background:#f8fafc; border:1px solid var(--bd); border-radius:6px; padding:12px;">
+            <b style="color:var(--ac); font-size:13px;">1. Demografía, Hogares y Estructura</b>
+            <ul style="padding-left:18px; margin-top:6px; font-size:12px; line-height:1.7;">
+              <li><a href="https://www.ine.es/dyngs/INEbase/categoria.htm?c=Estadistica_P&cid=1254734710984" target="_blank">INE: Padrón Continuo y Censos Demográficos ↗</a> <span class="bd obs">Obs.</span></li>
+              <li><a href="https://www.ine.es/jaxiT3/Tabla.htm?t=68535" target="_blank">INE: Tabla 68535 · Población por municipios y edad ↗</a> <span class="bd obs">Obs.</span></li>
+              <li><a href="https://www.ine.es/dyngs/INEbase/categoria.htm?c=Estadistica_P&cid=1254735573002" target="_blank">INE: Proyecciones de población a largo plazo ↗</a> <span class="bd proy">Proy.</span></li>
+              <li><a href="https://datos.comunidad.madrid" target="_blank">Portal de Datos Abiertos de la Comunidad de Madrid ↗</a> <span class="bd obs">Obs.</span></li>
+              <li><a href="https://www.comunidad.madrid/iestadis/" target="_blank">IESTADIS: Instituto de Estadística de la CAM ↗</a> <span class="bd obs">Obs.</span></li>
+              <li><a href="https://gestiona.comunidad.madrid/desvan/Inicio.icm?enlace=almudena" target="_blank">Banco de Datos Municipal ALMUDENA / DESVAN ↗</a> <span class="bd obs">Obs.</span></li>
+            </ul>
+          </div>
+
+          <!-- Bloque 2: Vivienda y Suelo -->
+          <div style="background:#f8fafc; border:1px solid var(--bd); border-radius:6px; padding:12px;">
+            <b style="color:var(--ac); font-size:13px;">2. Vivienda, Precios, Suelo y Mercado</b>
+            <ul style="padding-left:18px; margin-top:6px; font-size:12px; line-height:1.7;">
+              <li><a href="https://www.sedecatastro.gob.es/Accesos/SECAccDescargaDatos.aspx" target="_blank">Sede Electrónica del Catastro: Descargas y parcelas ↗</a> <span class="bd obs">Obs.</span></li>
+              <li><a href="https://www.catastro.hacienda.gob.es/es-ES/estadisticas.html" target="_blank">Estadísticas catastrales y suelo urbano disponible ↗</a> <span class="bd obs">Obs.</span></li>
+              <li><a href="https://www.mivau.gob.es/" target="_blank">MIVAU: Sistema Estatal de Referencia del Alquiler ↗</a> <span class="bd obs">Obs.</span></li>
+              <li><a href="https://notariado.org/portal/-/portal-estad%C3%ADstico-del-notariado" target="_blank">Portal Estadístico del Notariado (Compraventas) ↗</a> <span class="bd obs">Obs.</span></li>
+              <li><a href="https://www.comunidad.madrid/medio-ambiente/sistema-informacion-territorial-visor-sit" target="_blank">SIT CAM: Sistema de Información Territorial y Urbanismo ↗</a> <span class="bd obs">Obs.</span></li>
+            </ul>
+          </div>
+
+          <!-- Bloque 3: Transporte -->
+          <div style="background:#f8fafc; border:1px solid var(--bd); border-radius:6px; padding:12px;">
+            <b style="color:var(--ac); font-size:13px;">3. Transporte, Movilidad y Accesibilidad</b>
+            <ul style="padding-left:18px; margin-top:6px; font-size:12px; line-height:1.7;">
+              <li><a href="https://datos.crtm.es/" target="_blank">CRTM: Datos Abiertos Consorcio Regional de Transportes ↗</a> <span class="bd obs">Obs.</span></li>
+              <li><a href="https://www.crtm.es/" target="_blank">Red zonal de autobuses interurbanos y metro ↗</a> <span class="bd obs">Obs.</span></li>
+              <li><a href="https://www.renfe.com/es/es/grupo-renfe/comunicacion/renfe-al-dia/descarga/datos-abiertos" target="_blank">Renfe: Datos Abiertos de Cercanías Madrid ↗</a> <span class="bd obs">Obs.</span></li>
+              <li><a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap: Rutas e isócronas de viaje ↗</a> <span class="bd obs">Obs.</span></li>
+              <li><a href="https://www.transportes.gob.es/" target="_blank">Ministerio de Transportes y Movilidad Sostenible ↗</a> <span class="bd obs">Obs.</span></li>
+            </ul>
+          </div>
+
+          <!-- Bloque 4: Educación y Sanidad -->
+          <div style="background:#f8fafc; border:1px solid var(--bd); border-radius:6px; padding:12px;">
+            <b style="color:var(--ac); font-size:13px;">4. Educación, Sanidad y Servicios Sociales</b>
+            <ul style="padding-left:18px; margin-top:6px; font-size:12px; line-height:1.7;">
+              <li><a href="https://datos.comunidad.madrid/dataset/centros_servicios_establecimientos_sanitarios" target="_blank">CAM: Centros y Establecimientos Sanitarios ↗</a> <span class="bd obs">Obs.</span></li>
+              <li><a href="https://datos.comunidad.madrid/dataset/centros_sanitarios_por_tipo" target="_blank">CAM: Consultorios locales y Centros de Salud de AP ↗</a> <span class="bd obs">Obs.</span></li>
+              <li><a href="https://datos.comunidad.madrid/dataset/c750856d-3166-4dac-8e80-d1b824c968b5" target="_blank">CAM: Centros Educativos (CEIP, IES, Escuelas Infantiles) ↗</a> <span class="bd obs">Obs.</span></li>
+              <li><a href="https://datos.comunidad.madrid/dataset/centros_servicios_sociales_por_tipo" target="_blank">CAM: Centros de Servicios Sociales de Base ↗</a> <span class="bd obs">Obs.</span></li>
+              <li><a href="https://datos.comunidad.madrid/dataset/discapacidad_residentes_hogares_servicio_social_12_meses_por_sexo" target="_blank">CAM: Atención a la Dependencia y Discapacidad ↗</a> <span class="bd obs">Obs.</span></li>
+            </ul>
+          </div>
+
+          <!-- Bloque 5: Medioambiente y Agua -->
+          <div style="background:#f8fafc; border:1px solid var(--bd); border-radius:6px; padding:12px;">
+            <b style="color:var(--ac); font-size:13px;">5. Medioambiente, Residuos, Agua y Riesgos</b>
+            <ul style="padding-left:18px; margin-top:6px; font-size:12px; line-height:1.7;">
+              <li><a href="https://datos.comunidad.madrid/dataset/calidad_aire_estaciones" target="_blank">CAM: Red de Calidad del Aire en tiempo real ↗</a> <span class="bd obs">Obs.</span></li>
+              <li><a href="https://www.miteco.gob.es/es/cartografia-y-sig/ide/descargas/agua/descargas_agua_snczi.html" target="_blank">MITECO SNCZI: Sistema Nacional de Cartografía de Zonas Inundables ↗</a> <span class="bd obs">Obs.</span></li>
+              <li><a href="https://www.canaldeisabelsegunda.es/" target="_blank">Canal de Isabel II: Abastecimiento y redes de saneamiento ↗</a> <span class="bd obs">Obs.</span></li>
+              <li><a href="https://datos.comunidad.madrid/dataset/residuos_domesticos_generacion" target="_blank">CAM: Generación y tratamiento de residuos domésticos ↗</a> <span class="bd obs">Obs.</span></li>
+            </ul>
+          </div>
+
+          <!-- Bloque 6 & 7: Economía y Cartografía -->
+          <div style="background:#f8fafc; border:1px solid var(--bd); border-radius:6px; padding:12px;">
+            <b style="color:var(--ac); font-size:13px;">6. Economía, Presupuestos y Cartografía Territorial</b>
+            <ul style="padding-left:18px; margin-top:6px; font-size:12px; line-height:1.7;">
+              <li><a href="https://serviciostelematicosext.hacienda.gob.es/SGFAL/CONPREL" target="_blank">Ministerio de Hacienda SGFAL: Presupuestos Municipales (CONPREL) ↗</a> <span class="bd obs">Obs.</span></li>
+              <li><a href="https://centrodedescargas.cnig.es/CentroDescargas/" target="_blank">IGN / CNIG: Delimitaciones y límites municipales oficiales ↗</a> <span class="bd obs">Obs.</span></li>
+              <li><a href="https://datos.gob.es/es/catalogo" target="_blank">Datos.gob.es: Catálogo Nacional de Datos Abiertos ↗</a> <span class="bd obs">Obs.</span></li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- DATA & SCRIPT CORE -->
+<script>
+// ==========================================
+// GEOMETRÍA OFICIAL DE LA COMUNIDAD DE MADRID
+// ==========================================
+const MADRID_GEOJSON = {"type":"Feature","geometry":{"type":"MultiPolygon","coordinates":[[[[-3.536705,41.160576],[-3.488751,41.094294],[-3.425805,41.082899],[-3.438935,41.04267],[-3.39445,41.000278],[-3.418296,40.987564],[-3.444062,40.906849],[-3.460577,40.906659],[-3.440487,40.87535],[-3.47257,40.864217],[-3.477387,40.823561],[-3.511572,40.788496],[-3.45901,40.781324],[-3.444343,40.76158],[-3.450416,40.734887],[-3.434945,40.727986],[-3.468553,40.689937],[-3.404735,40.669637],[-3.393354,40.692458],[-3.345598,40.637743],[-3.316497,40.655177],[-3.338516,40.625849],[-3.321644,40.612192],[-3.328275,40.594836],[-3.284069,40.568977],[-3.297126,40.537521],[-3.249915,40.544316],[-3.199955,40.514449],[-3.198597,40.442252],[-3.155515,40.439425],[-3.130558,40.405185],[-3.15343,40.367703],[-3.141212,40.350542],[-3.182857,40.308267],[-3.194449,40.248037],[-3.173397,40.23417],[-3.153718,40.263714],[-3.112674,40.285478],[-3.101528,40.278092],[-3.067845,40.157914],[-3.089276,40.16297],[-3.096755,40.142389],[-3.056194,40.113743],[-3.060707,40.090564],[-3.11819,40.061429],[-3.161579,40.064928],[-3.178137,40.092207],[-3.200956,40.060488],[-3.275756,40.047276],[-3.332241,40.080482],[-3.37529,40.075393],[-3.375783,40.051255],[-3.401072,40.034181],[-3.506863,40.048674],[-3.519689,40.021072],[-3.589995,40.013172],[-3.637944,39.988352],[-3.634499,39.965892],[-3.74387,39.940802],[-3.804398,39.88472],[-3.868326,39.904859],[-3.87519,39.928736],[-3.840044,39.941956],[-3.832042,39.93156],[-3.809548,39.953965],[-3.783347,39.944796],[-3.763602,39.967518],[-3.770486,39.950552],[-3.75437,39.950443],[-3.758817,39.968885],[-3.727936,39.964545],[-3.746207,39.981089],[-3.720088,39.984441],[-3.699891,40.019543],[-3.636088,40.041626],[-3.607628,40.108967],[-3.655732,40.124912],[-3.667313,40.143291],[-3.683724,40.13227],[-3.722216,40.147713],[-3.744375,40.132224],[-3.770453,40.139399],[-3.804603,40.176841],[-3.834186,40.161353],[-3.872016,40.190153],[-3.931143,40.203977],[-3.950892,40.190335],[-3.952866,40.212797],[-3.991002,40.209478],[-4.026159,40.235611],[-4.024028,40.248968],[-4.072894,40.265451],[-4.104272,40.241833],[-4.145769,40.245177],[-4.143992,40.264621],[-4.190871,40.297355],[-4.20323,40.268818],[-4.247999,40.273481],[-4.269961,40.235685],[-4.306111,40.221778],[-4.307989,40.233882],[-4.348488,40.236747],[-4.356386,40.308621],[-4.38011,40.318341],[-4.383482,40.289049],[-4.435246,40.259127],[-4.437426,40.236698],[-4.509789,40.21919],[-4.527911,40.200093],[-4.574993,40.206642],[-4.559329,40.231269],[-4.568788,40.258712],[-4.529379,40.293125],[-4.546225,40.341825],[-4.526788,40.344873],[-4.502898,40.314893],[-4.455762,40.319351],[-4.460596,40.341381],[-4.438636,40.352754],[-4.443729,40.3857],[-4.42173,40.406229],[-4.321089,40.410309],[-4.341252,40.428678],[-4.315679,40.464766],[-4.328218,40.533757],[-4.289262,40.564194],[-4.278572,40.603172],[-4.290709,40.627823],[-4.271102,40.629023],[-4.262141,40.60518],[-4.245439,40.602447],[-4.161183,40.623465],[-4.172853,40.630362],[-4.171567,40.680626],[-4.096991,40.747739],[-4.0767,40.788881],[-3.979676,40.784555],[-3.947105,40.862974],[-3.952276,40.893632],[-3.907197,40.955303],[-3.781366,41.000312],[-3.740455,41.05364],[-3.676065,41.086696],[-3.613703,41.149053],[-3.536705,41.160576]],[[-3.372259,40.635612],[-3.380257,40.632854],[-3.382135,40.630471],[-3.363665,40.631602],[-3.372259,40.635612]]],[[[-4.255731,40.65317],[-4.31951,40.647644],[-4.324122,40.658029],[-4.284817,40.681221],[-4.255731,40.65317]]]]},"properties":{"cod_ccaa":"13","noml_ccaa":"COMUNIDAD DE MADRID","name":"Madrid","cartodb_id":13,"created_at":"2014-09-30T00:00:00Z","updated_at":"2014-12-25T02:07:41Z"}};
+
+// ==========================================
+// DATASET UNIFICADO: 41 MUNICIPIOS DE MADRID (<50.000 HAB.)
+// ==========================================
+const M = [
+  {n:"Robledo de Chavela", lon:-4.2367, lat:40.5017, pop:4.8, prc:1550, crec:72, trans:42, serv:60, amb:88, ine:"28125", com:"Sierra Oeste", tip:"Rural", med:6, hmed:803, esc_oc:74.6, par:43, fib:86.8, cap_san:4182, cap_esc:817, cap_viv:1045, limit:"Educación", colapso:817, ica:67, nivel:"Alta", fiab:96, limit_det:"Capacidad de aulas en CEIP", badges:["Vivienda asequible","Entorno natural protegido"], tiempo:60, cluster:2, pres_pc:1150},
+  {n:"Buitrago del Lozoya", lon:-3.6378, lat:40.9917, pop:2.0, prc:1450, crec:22, trans:20, serv:61, amb:92, ine:"28027", com:"Sierra Norte", tip:"Rural", med:2, hmed:1017, esc_oc:71.3, par:14, fib:77.9, cap_san:966, cap_esc:383, cap_viv:345, limit:"Vivienda", colapso:345, ica:62, nivel:"Alta", fiab:94, limit_det:"Escaso parque de alquiler", badges:["Baja presión escolar","Baja frecuencia transporte"], tiempo:60, cluster:2, pres_pc:1350},
+  {n:"Montejo de la Sierra", lon:-3.5306, lat:41.0611, pop:0.4, prc:1100, crec:18, trans:15, serv:72, amb:96, ine:"28088", com:"Sierra Norte", tip:"Rural", med:1, hmed:404, esc_oc:85.2, par:5, fib:70.0, cap_san:1096, cap_esc:31, cap_viv:91, limit:"Educación", colapso:31, ica:60, nivel:"Media", fiab:91, limit_det:"CRA con cupo al 85%", badges:["Reserva Biosfera","Requiere vehículo propio"], tiempo:85, cluster:3, pres_pc:1600},
+  {n:"Chinchón", lon:-3.4244, lat:40.1414, pop:5.8, prc:1600, crec:35, trans:28, serv:48, amb:82, ine:"28052", com:"Las Vegas", tip:"Semiurbano", med:4, hmed:1450, esc_oc:91.4, par:22, fib:81.2, cap_san:200, cap_esc:142, cap_viv:410, limit:"Educación", colapso:142, ica:49, nivel:"Media", fiab:95, limit_det:"Saturación en secundaria", badges:["Patrimonio Histórico","Vivienda asequible"], tiempo:45, cluster:2, pres_pc:980},
+  {n:"San Martín de Valdeiglesias", lon:-4.4011, lat:40.3622, pop:9.3, prc:1500, crec:38, trans:18, serv:52, amb:85, ine:"28133", com:"Sierra Oeste", tip:"Semiurbano", med:7, hmed:1332, esc_oc:88.5, par:36, fib:84.5, cap_san:1176, cap_esc:312, cap_viv:520, limit:"Educación", colapso:312, ica:45, nivel:"Media", fiab:93, limit_det:"Escuela infantil sin vacantes", badges:["Embalse de San Juan","Tiempo >60 min"], tiempo:65, cluster:2, pres_pc:940},
+  {n:"El Molar", lon:-3.5819, lat:40.7336, pop:10.0, prc:2000, crec:45, trans:32, serv:50, amb:80, ine:"28086", com:"Medio Jarama", tip:"Semiurbano", med:6, hmed:1666, esc_oc:89.2, par:42, fib:88.3, cap_san:0, cap_esc:280, cap_viv:620, limit:"Sanidad", colapso:0, ica:44, nivel:"Media", fiab:95, limit_det:"Ratio médico >1.600 hab/médico", badges:["Eje A-1 directo","Déficit cupo médico"], tiempo:40, cluster:1, pres_pc:890},
+  {n:"Villarejo de Salvanés", lon:-3.2753, lat:40.1689, pop:8.0, prc:1200, crec:34, trans:22, serv:46, amb:74, ine:"28180", com:"Las Vegas", tip:"Semiurbano", med:5, hmed:1608, esc_oc:87.6, par:32, fib:83.0, cap_san:0, cap_esc:245, cap_viv:780, limit:"Sanidad", colapso:0, ica:43, nivel:"Media", fiab:94, limit_det:"Ratio médico al límite; precisa refuerzo", badges:["Suelo disponible","Precio muy bajo"], tiempo:50, cluster:2, pres_pc:910},
+  {n:"Torres de la Alameda", lon:-3.3606, lat:40.4047, pop:7.8, prc:1700, crec:48, trans:36, serv:52, amb:70, ine:"28154", com:"Henares", tip:"Semiurbano", med:5, hmed:1564, esc_oc:90.1, par:34, fib:91.4, cap_san:0, cap_esc:190, cap_viv:410, limit:"Sanidad", colapso:0, ica:40, nivel:"Media", fiab:96, limit_det:"Consultorio al 104% capacidad", badges:["Corredor del Henares","Déficit médico"], tiempo:35, cluster:1, pres_pc:920},
+  {n:"Rascafría", lon:-3.8792, lat:40.9037, pop:1.7, prc:2050, crec:15, trans:15, serv:53, amb:96, ine:"28120", com:"Sierra Norte", tip:"Rural", med:1, hmed:1704, esc_oc:78.2, par:38, fib:78.9, cap_san:0, cap_esc:204, cap_viv:222, limit:"Sanidad", colapso:0, ica:37, nivel:"Baja", fiab:92, limit_det:"1 único médico para dispersión", badges:["Parque Nacional Guadarrama","Sanidad crítica"], tiempo:85, cluster:3, pres_pc:1450},
+  {n:"Villa del Prado", lon:-4.3061, lat:40.2783, pop:7.7, prc:1250, crec:32, trans:15, serv:42, amb:78, ine:"28171", com:"Sierra Oeste", tip:"Semiurbano", med:5, hmed:1549, esc_oc:83.9, par:48, fib:85.6, cap_san:0, cap_esc:830, cap_viv:1378, limit:"Sanidad", colapso:0, ica:37, nivel:"Baja", fiab:93, limit_det:"Urgencias comarcales saturadas", badges:["Huerta de Madrid","Transporte interurbano bajo"], tiempo:65, cluster:2, pres_pc:870},
+  {n:"Colmenar de Oreja", lon:-3.3850, lat:40.1067, pop:9.1, prc:1150, crec:30, trans:18, serv:40, amb:75, ine:"28043", com:"Las Vegas", tip:"Semiurbano", med:6, hmed:1521, esc_oc:89.4, par:59, fib:76.9, cap_san:0, cap_esc:486, cap_viv:1666, limit:"Sanidad", colapso:0, ica:35, nivel:"Baja", fiab:93, limit_det:"Centro salud alejado de hospital", badges:["Vivienda muy barata","Fibra mejorable"], tiempo:55, cluster:2, pres_pc:860},
+  {n:"Morata de Tajuña", lon:-3.4342, lat:40.2272, pop:8.4, prc:1500, crec:35, trans:25, serv:44, amb:68, ine:"28091", com:"Las Vegas", tip:"Semiurbano", med:5, hmed:1679, esc_oc:93.5, par:43, fib:94.7, cap_san:0, cap_esc:110, cap_viv:465, limit:"Sanidad", colapso:0, ica:31, nivel:"Baja", fiab:95, limit_det:"Déficit médico agudo (1.679 hab/méd)", badges:["Fibra 95%","Colapso sanitario si crece"], tiempo:40, cluster:1, pres_pc:890},
+  {n:"Manzanares el Real", lon:-3.8617, lat:40.7270, pop:9.6, prc:2450, crec:30, trans:24, serv:48, amb:95, ine:"28082", com:"Cuenca Alta", tip:"Semiurbano", med:7, hmed:1378, esc_oc:88.9, par:64, fib:84.2, cap_san:852, cap_esc:496, cap_viv:916, limit:"Educación", colapso:496, ica:30, nivel:"Baja", fiab:94, limit_det:"Aulas primaria al límite", badges:["Parque Regional","Precios al alza"], tiempo:50, cluster:2, pres_pc:1050},
+  {n:"Meco", lon:-3.3283, lat:40.5528, pop:15.9, prc:2000, crec:66, trans:42, serv:50, amb:60, ine:"28083", com:"Henares", tip:"Semiurbano", med:10, hmed:1592, esc_oc:82.6, par:78, fib:87.9, cap_san:0, cap_esc:1795, cap_viv:1172, limit:"Sanidad", colapso:0, ica:29, nivel:"Baja", fiab:96, limit_det:"1.592 hab/médico (supera umbral 1.500)", badges:["Cercanías C-2 próximo","Cuello médico"], tiempo:40, cluster:1, pres_pc:820},
+  {n:"Torrelaguna", lon:-3.5361, lat:40.8275, pop:5.1, prc:1600, crec:28, trans:25, serv:42, amb:84, ine:"28151", com:"Sierra Norte", tip:"Semiurbano", med:3, hmed:1694, esc_oc:89.0, par:30, fib:77.9, cap_san:0, cap_esc:288, cap_viv:659, limit:"Sanidad", colapso:0, ica:27, nivel:"Baja", fiab:94, limit_det:"Cabecera comarcal desbordada", badges:["Conjunto Histórico","Déficit médico urgente"], tiempo:55, cluster:2, pres_pc:930},
+  {n:"Cercedilla", lon:-4.0567, lat:40.7406, pop:7.8, prc:2200, crec:26, trans:45, serv:48, amb:92, ine:"28038", com:"Guadarrama", tip:"Semiurbano", med:5, hmed:1554, esc_oc:80.8, par:44, fib:94.9, cap_san:0, cap_esc:1143, cap_viv:394, limit:"Sanidad", colapso:0, ica:26, nivel:"Baja", fiab:95, limit_det:"Cercanías C-8 pero sanidad tensionada", badges:["Cercanías Renfe","Presión turística"], tiempo:55, cluster:3, pres_pc:1180},
+  {n:"Ciempozuelos", lon:-3.6197, lat:40.1594, pop:26.4, prc:1950, crec:68, trans:52, serv:54, amb:60, ine:"28040", com:"Las Vegas", tip:"Urbano", med:18, hmed:1464, esc_oc:96.2, par:128, fib:99.1, cap_san:650, cap_esc:0, cap_viv:1332, limit:"Educación", colapso:0, ica:25, nivel:"Baja", fiab:97, limit_det:"Colegios al 96,2% ocupación", badges:["Cercanías C-3 directo","Alerta escolar"], tiempo:35, cluster:1, pres_pc:810},
+  {n:"Navalcarnero", lon:-4.0139, lat:40.2886, pop:33.3, prc:1900, crec:74, trans:42, serv:52, amb:66, ine:"28096", com:"Comarca Sur", tip:"Urbano", med:20, hmed:1667, esc_oc:95.2, par:166, fib:96.2, cap_san:0, cap_esc:0, cap_viv:1835, limit:"Sanidad", colapso:0, ica:25, nivel:"Baja", fiab:98, limit_det:"Doble cuello: Sanidad (>1.600) y Colegios (95%)", badges:["Dinamismo alto","Servicios en colapso"], tiempo:35, cluster:1, pres_pc:790},
+  {n:"Guadarrama", lon:-4.0889, lat:40.6725, pop:17.5, prc:2350, crec:44, trans:50, serv:52, amb:90, ine:"28068", com:"Guadarrama", tip:"Semiurbano", med:12, hmed:1462, esc_oc:90.4, par:87, fib:89.6, cap_san:453, cap_esc:755, cap_viv:1272, limit:"Sanidad", colapso:453, ica:23, nivel:"Baja", fiab:96, limit_det:"Urgencias con alta demanda estacional", badges:["Sierra pura","Precio medio-alto"], tiempo:45, cluster:2, pres_pc:960},
+  {n:"Soto del Real", lon:-3.7836, lat:40.7550, pop:9.4, prc:2600, crec:32, trans:30, serv:44, amb:90, ine:"28144", com:"Cuenca Alta", tip:"Semiurbano", med:6, hmed:1567, esc_oc:87.7, par:51, fib:84.0, cap_san:0, cap_esc:709, cap_viv:632, limit:"Sanidad", colapso:0, ica:23, nivel:"Baja", fiab:95, limit_det:"Cupos médicos superan 1.500", badges:["Próxima llegada Cercanías","Alto valor ecológico"], tiempo:45, cluster:2, pres_pc:1020},
+  {n:"Tres Cantos", lon:-3.7100, lat:40.6000, pop:48.0, prc:3400, crec:48, trans:70, serv:82, amb:85, ine:"28903", com:"Cuenca Alta", tip:"Urbano", med:36, hmed:1333, esc_oc:89.5, par:190, fib:99.5, cap_san:6000, cap_esc:1200, cap_viv:650, limit:"Vivienda", colapso:650, ica:65, nivel:"Alta", fiab:98, limit_det:"Precio vivienda elevado (>3.400 €/m²)", badges:["Dotación excelente","Cercanías C-4 directo","Esfuerzo vivienda alto"], tiempo:25, cluster:1, pres_pc:1120},
+  {n:"Villaviciosa de Odón", lon:-3.9000, lat:40.3600, pop:28.0, prc:3000, crec:60, trans:48, serv:62, amb:70, ine:"28181", com:"Comarca Sur", tip:"Urbano", med:20, hmed:1400, esc_oc:88.0, par:115, fib:97.0, cap_san:2000, cap_esc:850, cap_viv:520, limit:"Vivienda", colapso:520, ica:58, nivel:"Media", fiab:97, limit_det:"Escasez de suelo vacante inmediato", badges:["Entorno universitario","Precio alto"], tiempo:30, cluster:1, pres_pc:1050},
+  {n:"El Escorial", lon:-4.1500, lat:40.5900, pop:17.0, prc:3000, crec:38, trans:58, serv:64, amb:90, ine:"28054", com:"Guadarrama", tip:"Semiurbano", med:13, hmed:1308, esc_oc:82.0, par:95, fib:92.5, cap_san:2500, cap_esc:920, cap_viv:450, limit:"Vivienda", colapso:450, ica:57, nivel:"Media", fiab:96, limit_det:"Protección patrimonial y urbanística", badges:["Hospital comarcal","Cercanías C-8A","Patrimonio UNESCO"], tiempo:50, cluster:2, pres_pc:1190},
+  {n:"Torrelodones", lon:-3.9300, lat:40.5800, pop:24.0, prc:3300, crec:36, trans:60, serv:64, amb:86, ine:"28152", com:"Guadarrama", tip:"Urbano", med:18, hmed:1333, esc_oc:87.5, par:110, fib:98.0, cap_san:3000, cap_esc:780, cap_viv:380, limit:"Vivienda", colapso:380, ica:55, nivel:"Media", fiab:97, limit_det:"Tensión de precios", badges:["A-6 Bus-VAO","Renta alta"], tiempo:25, cluster:1, pres_pc:1250},
+  {n:"Galapagar", lon:-4.0000, lat:40.5800, pop:33.0, prc:2500, crec:46, trans:48, serv:56, amb:85, ine:"28061", com:"Guadarrama", tip:"Urbano", med:22, hmed:1500, esc_oc:91.0, par:140, fib:94.0, cap_san:0, cap_esc:600, cap_viv:980, limit:"Sanidad", colapso:0, ica:50, nivel:"Media", fiab:97, limit_det:"AP en el umbral límite", badges:["Cercanías La Navata","Vivienda unifamiliar"], tiempo:35, cluster:1, pres_pc:880},
+  {n:"Villanueva de la Cañada", lon:-3.9900, lat:40.4500, pop:22.0, prc:3000, crec:58, trans:42, serv:60, amb:72, ine:"28176", com:"Sierra Oeste", tip:"Urbano", med:16, hmed:1375, esc_oc:85.0, par:90, fib:96.5, cap_san:2000, cap_esc:810, cap_viv:720, limit:"Vivienda", colapso:720, ica:54, nivel:"Media", fiab:96, limit_det:"Precio >3.000 €/m²", badges:["Campus universidades","Alta demanda"], tiempo:35, cluster:1, pres_pc:1090},
+  {n:"Algete", lon:-3.5000, lat:40.6000, pop:22.0, prc:2300, crec:62, trans:35, serv:54, amb:66, ine:"28009", com:"Medio Jarama", tip:"Urbano", med:15, hmed:1467, esc_oc:90.0, par:88, fib:93.5, cap_san:500, cap_esc:520, cap_viv:850, limit:"Sanidad", colapso:500, ica:52, nivel:"Media", fiab:96, limit_det:"Dependencia de autobús A-1", badges:["Precio moderado","Sin tren directo"], tiempo:35, cluster:1, pres_pc:850},
+  {n:"Mejorada del Campo", lon:-3.4800, lat:40.3900, pop:24.0, prc:2100, crec:64, trans:52, serv:58, amb:56, ine:"28084", com:"Henares", tip:"Urbano", med:17, hmed:1412, esc_oc:89.0, par:92, fib:95.0, cap_san:1500, cap_esc:640, cap_viv:890, limit:"Educación", colapso:640, ica:53, nivel:"Media", fiab:97, limit_det:"Presión sobre plazas de secundaria", badges:["Proximidad capital","Alta fibra"], tiempo:25, cluster:1, pres_pc:820},
+  {n:"Humanes de Madrid", lon:-3.8300, lat:40.2500, pop:20.0, prc:1900, crec:62, trans:58, serv:58, amb:50, ine:"28073", com:"Comarca Sur", tip:"Urbano", med:14, hmed:1429, esc_oc:91.5, par:85, fib:97.2, cap_san:1000, cap_esc:410, cap_viv:750, limit:"Educación", colapso:410, ica:52, nivel:"Media", fiab:97, limit_det:"Colegios al límite turno mañana", badges:["Cercanías C-5","Precio accesible"], tiempo:30, cluster:1, pres_pc:830},
+  {n:"San Martín de la Vega", lon:-3.5700, lat:40.2100, pop:19.0, prc:1800, crec:58, trans:38, serv:48, amb:70, ine:"28132", com:"Las Vegas", tip:"Semiurbano", med:13, hmed:1462, esc_oc:88.0, par:75, fib:91.0, cap_san:500, cap_esc:540, cap_viv:820, limit:"Sanidad", colapso:500, ica:48, nivel:"Media", fiab:95, limit_det:"Líneas bus saturadas hora punta", badges:["Parque Warner","Vivienda asequible"], tiempo:35, cluster:2, pres_pc:840},
+  {n:"Velilla de San Antonio", lon:-3.5000, lat:40.3100, pop:13.0, prc:1900, crec:60, trans:42, serv:50, amb:58, ine:"28168", com:"Henares", tip:"Semiurbano", med:9, hmed:1444, esc_oc:89.0, par:62, fib:94.5, cap_san:500, cap_esc:380, cap_viv:620, limit:"Educación", colapso:380, ica:49, nivel:"Media", fiab:95, limit_det:"Reserva de suelo escolar pendiente", badges:["Lagunas naturales","R-3 cercana"], tiempo:25, cluster:1, pres_pc:880},
+  {n:"Moralzarzal", lon:-4.0100, lat:40.6800, pop:13.0, prc:2400, crec:50, trans:42, serv:48, amb:86, ine:"28090", com:"Guadarrama", tip:"Semiurbano", med:9, hmed:1444, esc_oc:88.5, par:66, fib:91.8, cap_san:500, cap_esc:360, cap_viv:510, limit:"Educación", colapso:360, ica:47, nivel:"Media", fiab:95, limit_det:"Cupos de primaria completos", badges:["Sierra Guadarrama","Bus 671 directo"], tiempo:45, cluster:2, pres_pc:970},
+  {n:"Valdemorillo", lon:-4.0600, lat:40.5000, pop:12.0, prc:2200, crec:52, trans:30, serv:44, amb:76, ine:"28160", com:"Sierra Oeste", tip:"Semiurbano", med:8, hmed:1500, esc_oc:86.0, par:58, fib:89.0, cap_san:0, cap_esc:410, cap_viv:680, limit:"Sanidad", colapso:0, ica:42, nivel:"Media", fiab:94, limit_det:"Consultorio necesita pediatra", badges:["Urbanizaciones dispersas","Uso de coche"], tiempo:45, cluster:2, pres_pc:950},
+  {n:"Brunete", lon:-3.9900, lat:40.4000, pop:12.0, prc:2300, crec:64, trans:30, serv:46, amb:66, ine:"28026", com:"Sierra Oeste", tip:"Semiurbano", med:8, hmed:1500, esc_oc:90.0, par:55, fib:92.0, cap_san:0, cap_esc:320, cap_viv:780, limit:"Sanidad", colapso:0, ica:44, nivel:"Media", fiab:95, limit_det:"Urgencias fuera del casco", badges:["Expansión urbana prevista","Bus a reforzar"], tiempo:35, cluster:1, pres_pc:910},
+  {n:"Sevilla la Nueva", lon:-4.0000, lat:40.3500, pop:10.0, prc:2400, crec:70, trans:28, serv:50, amb:70, ine:"28141", com:"Comarca Sur", tip:"Semiurbano", med:7, hmed:1429, esc_oc:87.0, par:52, fib:93.0, cap_san:500, cap_esc:340, cap_viv:550, limit:"Educación", colapso:340, ica:48, nivel:"Media", fiab:95, limit_det:"Sin oferta formación secundaria", badges:["Tranquilidad residencial","Ocupación alta"], tiempo:35, cluster:2, pres_pc:960},
+  {n:"Daganzo de Arriba", lon:-3.4500, lat:40.5400, pop:10.0, prc:2000, crec:68, trans:38, serv:48, amb:58, ine:"28053", com:"Henares", tip:"Semiurbano", med:7, hmed:1429, esc_oc:88.0, par:54, fib:93.5, cap_san:500, cap_esc:310, cap_viv:610, limit:"Educación", colapso:310, ica:47, nivel:"Media", fiab:95, limit_det:"Límite de aulas en primaria", badges:["Parque empresarial","M-100 directa"], tiempo:30, cluster:1, pres_pc:870},
+  {n:"Colmenarejo", lon:-4.0200, lat:40.5600, pop:9.0, prc:2900, crec:40, trans:28, serv:42, amb:84, ine:"28042", com:"Guadarrama", tip:"Semiurbano", med:6, hmed:1500, esc_oc:85.0, par:48, fib:90.0, cap_san:0, cap_esc:340, cap_viv:360, limit:"Sanidad", colapso:0, ica:41, nivel:"Media", fiab:94, limit_det:"Consultorio derivado a Galapagar", badges:["Campus Carlos III","Precio alto"], tiempo:40, cluster:2, pres_pc:1010},
+  {n:"Hoyo de Manzanares", lon:-3.8700, lat:40.6200, pop:9.0, prc:2800, crec:38, trans:32, serv:44, amb:88, ine:"28072", com:"Cuenca Alta", tip:"Semiurbano", med:6, hmed:1500, esc_oc:86.0, par:46, fib:92.0, cap_san:0, cap_esc:320, cap_viv:390, limit:"Sanidad", colapso:0, ica:43, nivel:"Media", fiab:94, limit_det:"Consultorio saturado", badges:["Parque Regional","Sin tren directo"], tiempo:35, cluster:2, pres_pc:1080},
+  {n:"Loeches", lon:-3.4300, lat:40.3800, pop:9.0, prc:2000, crec:58, trans:25, serv:40, amb:64, ine:"28075", com:"Henares", tip:"Semiurbano", med:6, hmed:1500, esc_oc:89.0, par:44, fib:90.5, cap_san:0, cap_esc:260, cap_viv:590, limit:"Sanidad", colapso:0, ica:39, nivel:"Baja", fiab:94, limit_det:"Sin médico de tarde", badges:["Precio accesible","Frecuencia bus"], tiempo:35, cluster:1, pres_pc:830},
+  {n:"Miraflores de la Sierra", lon:-3.7700, lat:40.8200, pop:6.0, prc:2400, crec:28, trans:20, serv:38, amb:94, ine:"28085", com:"Sierra Norte", tip:"Semiurbano", med:4, hmed:1500, esc_oc:84.0, par:36, fib:86.0, cap_san:0, cap_esc:240, cap_viv:310, limit:"Sanidad", colapso:0, ica:36, nivel:"Baja", fiab:93, limit_det:"Hospital alejado (Infanta Sofía)", badges:["Montaña","Bus 725 directo"], tiempo:55, cluster:3, pres_pc:1100},
+  {n:"Navacerrada", lon:-4.0100, lat:40.7300, pop:3.0, prc:2800, crec:26, trans:38, serv:46, amb:92, ine:"28093", com:"Guadarrama", tip:"Rural", med:2, hmed:1500, esc_oc:79.0, par:28, fib:88.0, cap_san:0, cap_esc:160, cap_viv:140, limit:"Sanidad", colapso:0, ica:38, nivel:"Baja", fiab:93, limit_det:"Sobrecarga médica invernal", badges:["Puerto de esquí","Vivienda estacional"], tiempo:55, cluster:3, pres_pc:1300}
+];
+
+// Helper functions
+const $ = id => document.getElementById(id);
+const cl = x => Math.max(0, Math.min(100, Math.round(x)));
+const mm = n => M.find(m => m.n === n);
+
+let cur = "ica";
+let sel = "Buitrago del Lozoya";
+let cmp = ["Buitrago del Lozoya", "Robledo de Chavela", "Tres Cantos", "Ciempozuelos"];
+
+// Perfil activo
+let currentProfile = "ciudadano";
+
+// Variables descriptivas
+const V = [
+  ["ica", "Índice ICA Global", "est", "/100"],
+  ["colapso", "Capacidad Neta sin Colapso", "proy", " hab."],
+  ["prc", "Precio Vivienda", "est", " €/m²"],
+  ["trans", "Transporte & Conectividad", "obs", "/100"],
+  ["serv", "Servicios Públicos", "obs", "/100"],
+  ["amb", "Medioambiente", "obs", "/100"],
+  ["pop", "Población Actual", "obs", " mil"]
+];
+
+const range = k => {
+  const a = M.map(m => m[k]);
+  return [Math.min(...a), Math.max(...a)];
+};
+
+// Escalas de color
+function getColor(m, key) {
+  if (key === "limit") {
+    if (m.limit === "Sanidad") return "#2563eb"; // Azul
+    if (m.limit === "Educación") return "#d97706"; // Ámbar
+    return "#7c3aed"; // Púrpura (Vivienda)
+  }
+  if (key === "ica") {
+    if (m.ica >= 60) return "#16a34a"; // Alta (verde)
+    if (m.ica >= 40) return "#d97706"; // Media (ámbar)
+    return "#dc2626"; // Baja (rojo)
+  }
+  const [lo, hi] = range(key);
+  const t = Math.max(0, Math.min(1, (m[key] - lo) / (hi - lo || 1)));
+  const r = Math.round(219 - t * (219 - 29));
+  const g = Math.round(234 - t * (234 - 78));
+  const b = Math.round(254 - t * (254 - 216));
+  return `rgb(${r},${g},${b})`;
+}
+
+// Filtros
+const getFilters = () => ({
+  q: $("q").value.toLowerCase().trim(),
+  com: $("f_comarca").value,
+  pop: +$("pop").value,
+  pr: +$("pr").value,
+  tr: +$("tr").value,
+  limit: $("f_limit").value
+});
+
+const passFilter = (m, F) => {
+  if (F.q && !m.n.toLowerCase().includes(F.q)) return false;
+  if (F.com !== "all" && m.com !== F.com) return false;
+  if (m.pop > F.pop) return false;
+  if (m.prc > F.pr) return false;
+  if (m.trans < F.tr) return false;
+  if (F.limit !== "all" && m.limit !== F.limit) return false;
+  return true;
+};
+
+
+// ==========================================
+// MAPA REALISTA (LEAFLET + TILES + GEOJSON)
+// ==========================================
+let leafletMap = null;
+let leafletMarkersLayer = null;
+let leafletBoundaryLayer = null;
+let activeTile = "street";
+
+const tileConfigs = {
+  street: {
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+    options: {
+      attribution: 'Tiles &copy; Esri &mdash; Sources: Esri, DeLorme, HERE, USGS, Intermap, INCREMENT P',
+      maxZoom: 18
+    }
+  },
+  ign: {
+    url: "https://www.ign.es/wmts/ign-base?service=WMTS&request=GetTile&version=1.0.0&Format=image/png&layer=IGNBaseTodo&style=default&tilematrixset=GoogleMapsCompatible&TileMatrix={z}&TileRow={y}&TileCol={x}",
+    options: {
+      attribution: '&copy; <a href="https://www.ign.es/" target="_blank">IGN España / CNIG</a>',
+      maxZoom: 18
+    }
+  },
+  esri: {
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+    options: {
+      attribution: 'Tiles &copy; Esri &mdash; National Geographic, DeLorme, HERE',
+      maxZoom: 16
+    }
+  },
+  sat: {
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    options: {
+      attribution: 'Tiles &copy; Esri, Maxar, Earthstar Geographics',
+      maxZoom: 19
+    }
+  }
+};
+let currentTileLayer = null;
+
+function initLeafletMap() {
+  if (typeof L === "undefined") {
+    console.warn("Leaflet CDN no disponible, activando modo vectorial SVG.");
+    setMapMode("svg");
+    return;
+  }
+
+  try {
+    leafletMap = L.map('leaflet_map', {
+      center: [40.50, -3.70],
+      zoom: 9,
+      minZoom: 8,
+      maxZoom: 14,
+      zoomControl: true
+    });
+
+    const cfg = tileConfigs.street;
+    currentTileLayer = L.tileLayer(cfg.url, cfg.options).addTo(leafletMap);
+
+    // Añadir límite oficial de la Comunidad de Madrid
+    if (typeof MADRID_GEOJSON !== "undefined" && MADRID_GEOJSON) {
+      leafletBoundaryLayer = L.geoJSON(MADRID_GEOJSON, {
+        style: {
+          color: '#2563eb',
+          weight: 2.2,
+          dashArray: '3, 4',
+          fillColor: '#38bdf8',
+          fillOpacity: 0.04
+        }
+      }).addTo(leafletMap);
+    }
+
+    leafletMarkersLayer = L.layerGroup().addTo(leafletMap);
+    drawLeafletMarkers();
+
+  } catch (e) {
+    console.error("Error al inicializar Leaflet:", e);
+    setMapMode("svg");
+  }
+}
+
+function setTileLayer(type) {
+  if (!leafletMap || !tileConfigs[type]) return;
+  activeTile = type;
+  if (currentTileLayer) leafletMap.removeLayer(currentTileLayer);
+
+  const cfg = tileConfigs[type];
+  currentTileLayer = L.tileLayer(cfg.url, cfg.options).addTo(leafletMap);
+
+  document.querySelectorAll(".map-pill-btn").forEach(b => b.classList.remove("active"));
+  const btn = $("btn_layer_" + type);
+  if (btn) btn.classList.add("active");
+}
+
+function setMapMode(mode) {
+  if (mode === "svg") {
+    $("leaflet_map").style.display = "none";
+    $("svg_map_container").style.display = "flex";
+    document.querySelectorAll(".map-pill-btn").forEach(b => b.classList.remove("active"));
+    const btn = $("btn_layer_svg");
+    if (btn) btn.classList.add("active");
+    drawSvgMap();
+  } else {
+    $("leaflet_map").style.display = "block";
+    $("svg_map_container").style.display = "none";
+    if (leafletMap) leafletMap.invalidateSize();
+    setTileLayer(mode);
+  }
+}
+
+$("btn_layer_street").onclick = () => setMapMode("street");
+$("btn_layer_ign").onclick = () => setMapMode("ign");
+$("btn_layer_esri").onclick = () => setMapMode("esri");
+$("btn_layer_sat").onclick = () => setMapMode("sat");
+$("btn_layer_svg").onclick = () => setMapMode("svg");
+
+function drawLeafletMarkers() {
+  if (!leafletMarkersLayer) return;
+  leafletMarkersLayer.clearLayers();
+
+  const F = getFilters();
+
+  M.forEach(m => {
+    const isPass = passFilter(m, F);
+    if (!isPass) return;
+
+    const color = getColor(m, cur);
+    const radius = 6 + Math.sqrt(m.pop) * 1.3;
+    const isSelected = m.n === sel;
+
+    const marker = L.circleMarker([m.lat, m.lon], {
+      radius: isSelected ? radius + 3 : radius,
+      fillColor: color,
+      fillOpacity: isSelected ? 0.95 : 0.8,
+      color: isSelected ? "#0f172a" : "#ffffff",
+      weight: isSelected ? 3 : 1.5
+    });
+
+    const tooltipContent = `
+      <div style="font-family:system-ui; font-size:12px;">
+        <b style="font-size:13px; color:#0f172a;">${m.n}</b> <small style="color:#64748b;">(${m.com})</small><br>
+        Población: <b>${m.pop}k</b> | Precio: <b>${m.prc} €/m²</b><br>
+        Índice ICA: <b style="color:${m.ica>=60?'#16a34a':m.ica>=40?'#d97706':'#dc2626'}">${m.ica}/100</b> (${m.nivel})<br>
+        Cuello limitante: <span style="font-weight:700; color:#b91c1c;">⚠️ ${m.limit}</span>
+      </div>
+    `;
+
+    marker.bindTooltip(tooltipContent, { direction: "top", offset: [0, -6] });
+
+    marker.on("click", () => {
+      sel = m.n;
+      leafletMap.flyTo([m.lat, m.lon], Math.max(leafletMap.getZoom(), 11), { duration: 0.8 });
+      refresh();
+    });
+
+    leafletMarkersLayer.addLayer(marker);
+  });
+}
+
+
+// ==========================================
+// MAPA VECTORIAL SVG (PROYECCIÓN GEOGRÁFICA)
+// ==========================================
+function projectGeo(lon, lat, width, height) {
+  const minLon = -4.58, maxLon = -3.05, minLat = 39.88, maxLat = 41.17;
+  const x = ((lon - minLon) / (maxLon - minLon)) * (width - 40) + 20;
+  const y = height - (((lat - minLat) / (maxLat - minLat)) * (height - 40) + 20);
+  return [x, y];
+}
+
+function drawSvgMap() {
+  const svg = $("map_svg");
+  const F = getFilters();
+  const w = 600, h = 640;
+
+  let polyPoints = "";
+  if (typeof MADRID_GEOJSON !== "undefined" && MADRID_GEOJSON && MADRID_GEOJSON.geometry && MADRID_GEOJSON.geometry.coordinates) {
+    const rawCoords = MADRID_GEOJSON.geometry.coordinates[0][0];
+    polyPoints = rawCoords.map(pt => projectGeo(pt[0], pt[1], w, h).join(",")).join(" ");
+  }
+
+  let html = `<polygon class="reg" points="${polyPoints}" style="fill:#ffffff; stroke:#64748b; stroke-width:1.5; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.06));"/>`;
+
+  [...M].sort((a,b) => b.pop - a.pop).forEach(m => {
+    const [x, y] = projectGeo(m.lon, m.lat, w, h);
+    const r = 5 + Math.sqrt(m.pop) * 0.95;
+    const isPass = passFilter(m, F);
+    const color = getColor(m, cur);
+    const isSel = m.n === sel;
+
+    html += `<circle class="dot ${isPass ? "" : "dim"} ${isSel ? "sel" : ""}" 
+                     data-n="${m.n}" cx="${x}" cy="${y}" r="${r}" fill="${color}"
+                     style="stroke:${isSel ? '#0f172a' : '#fff'}; stroke-width:${isSel ? 3.5 : 1.2}; cursor:pointer;"/>`;
+  });
+
+  M.filter(m => m.pop >= 18 || m.n === sel).forEach(m => {
+    const [x, y] = projectGeo(m.lon, m.lat, w, h);
+    const r = 5 + Math.sqrt(m.pop) * 0.95;
+    html += `<text x="${x}" y="${y - r - 3}" font-size="9.5" font-weight="${m.n === sel ? '700' : '500'}" text-anchor="middle" fill="#0f172a" style="pointer-events:none; paint-order:stroke; stroke:#f1f5f9; stroke-width:3">${m.n}</text>`;
+  });
+
+  svg.innerHTML = html;
+
+  svg.querySelectorAll("circle.dot").forEach(d => {
+    d.onclick = () => {
+      sel = d.dataset.n;
+      refresh();
+    };
+  });
+}
+
+
+// ==========================================
+// RADAR CHART SVG GENERATOR (6 FACTORES)
+// ==========================================
+function renderRadarChart(svgId, municipalDataArray, width = 340, height = 280) {
+  const svg = $(svgId);
+  if (!svg) return;
+
+  const cx = width / 2;
+  const cy = height / 2;
+  const radius = Math.min(cx, cy) - 38;
+
+  const axes = [
+    { label: "Sanidad", key: "sanidad" },
+    { label: "Educación", key: "educacion" },
+    { label: "Conectividad", key: "trans" },
+    { label: "Asequibilidad", key: "asequibilidad" },
+    { label: "Medioambiente", key: "amb" },
+    { label: "Músculo Presup.", key: "presupuesto" }
+  ];
+
+  const totalAxes = axes.length;
+  const angleStep = (Math.PI * 2) / totalAxes;
+
+  const getValues = m => [
+    cl(m.hmed <= 1000 ? 95 : m.hmed <= 1400 ? 75 : m.hmed <= 1500 ? 50 : 25),
+    cl(100 - (m.esc_oc - 70) * 3),
+    m.trans,
+    cl(100 - (m.prc - 1100) / 24),
+    m.amb,
+    cl((m.pres_pc - 700) / 9)
+  ];
+
+  let svgContent = `<defs>
+    <radialGradient id="grad_radar" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#2563eb" stop-opacity="0.05"/>
+    </radialGradient>
+  </defs>`;
+
+  [0.2, 0.4, 0.6, 0.8, 1.0].forEach(level => {
+    const pts = [];
+    for (let i = 0; i < totalAxes; i++) {
+      const angle = i * angleStep - Math.PI / 2;
+      pts.push(`${cx + Math.cos(angle) * radius * level},${cy + Math.sin(angle) * radius * level}`);
+    }
+    svgContent += `<polygon points="${pts.join(' ')}" fill="none" stroke="#e2e8f0" stroke-width="1"/>`;
+  });
+
+  axes.forEach((axis, i) => {
+    const angle = i * angleStep - Math.PI / 2;
+    const x = cx + Math.cos(angle) * radius;
+    const y = cy + Math.sin(angle) * radius;
+    svgContent += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#cbd5e1" stroke-width="1.2"/>`;
+
+    const tx = cx + Math.cos(angle) * (radius + 18);
+    const ty = cy + Math.sin(angle) * (radius + 16);
+    const anchor = Math.abs(Math.cos(angle)) < 0.2 ? "middle" : Math.cos(angle) > 0 ? "start" : "end";
+    svgContent += `<text x="${tx}" y="${ty}" font-size="10" font-weight="600" fill="#475569" text-anchor="${anchor}">${axis.label}</text>`;
+  });
+
+  const avgVals = [58, 62, 54, 48, 76, 50];
+  const avgPts = avgVals.map((v, i) => {
+    const angle = i * angleStep - Math.PI / 2;
+    const r = (v / 100) * radius;
+    return `${cx + Math.cos(angle) * r},${cy + Math.sin(angle) * r}`;
+  }).join(' ');
+  svgContent += `<polygon points="${avgPts}" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3, 3"/>`;
+
+  const colors = [
+    { fill: "rgba(37, 99, 235, 0.22)", stroke: "#2563eb" },
+    { fill: "rgba(22, 163, 74, 0.18)", stroke: "#16a34a" },
+    { fill: "rgba(217, 119, 6, 0.18)", stroke: "#d97706" },
+    { fill: "rgba(124, 58, 237, 0.18)", stroke: "#7c3aed" }
+  ];
+
+  municipalDataArray.forEach((m, idx) => {
+    const vals = getValues(m);
+    const pts = vals.map((v, i) => {
+      const angle = i * angleStep - Math.PI / 2;
+      const r = (v / 100) * radius;
+      return `${cx + Math.cos(angle) * r},${cy + Math.sin(angle) * r}`;
+    }).join(' ');
+
+    const c = colors[idx % colors.length];
+    svgContent += `<polygon points="${pts}" fill="${c.fill}" stroke="${c.stroke}" stroke-width="2.2"/>`;
+
+    vals.forEach((v, i) => {
+      const angle = i * angleStep - Math.PI / 2;
+      const r = (v / 100) * radius;
+      const px = cx + Math.cos(angle) * r;
+      const py = cy + Math.sin(angle) * r;
+      svgContent += `<circle cx="${px}" cy="${py}" r="3" fill="${c.stroke}"/>`;
+    });
+  });
+
+  svg.innerHTML = svgContent;
+}
+
+
+// ==========================================
+// DIBUJAR MINI FICHA LATERAL
+// ==========================================
+function drawMiniFicha() {
+  const m = mm(sel) || M[0];
+  const colColor = m.ica >= 60 ? "green" : m.ica >= 40 ? "amber" : "red";
+  
+  $("fic").innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:start;">
+      <div>
+        <b style="font-size:16px; color:#0f172a;">${m.n}</b>
+        <div style="color:var(--mu); font-size:11.5px; margin:2px 0 6px;">
+          ${m.com} · ${m.tip} · ${m.pop} mil hab.
+        </div>
+      </div>
+      <span class="bd ${m.nivel === 'Alta' ? 'proy' : m.nivel === 'Media' ? 'est' : 'sim'}">${m.nivel}</span>
+    </div>
+
+    <div class="m" style="margin-top:6px;">
+      <b>Índice ICA</b>
+      <div class="b ${colColor}"><i style="width:${m.ica}%"></i></div>
+      <b>${m.ica}</b>
+    </div>
+    <div class="m">
+      <span>Transporte</span>
+      <div class="b"><i style="width:${m.trans}%"></i></div>
+      <span>${m.trans}</span>
+    </div>
+    <div class="m">
+      <span>Servicios Púb.</span>
+      <div class="b"><i style="width:${m.serv}%"></i></div>
+      <span>${m.serv}</span>
+    </div>
+    <div class="m">
+      <span>Medioambiente</span>
+      <div class="b green"><i style="width:${m.amb}%"></i></div>
+      <span>${m.amb}</span>
+    </div>
+
+    <div style="margin:10px 0; padding:8px 10px; background:#f8fafc; border:1px solid var(--bd); border-radius:6px;">
+      <div style="font-size:11.5px; font-weight:700; color:#0f172a; display:flex; justify-content:space-between;">
+        <span>Factor Limitante:</span>
+        <span class="badge-alert red">⚠️ ${m.limit}</span>
+      </div>
+      <div style="font-size:11px; color:var(--mu); margin-top:3px;">
+        ${m.limit_det} · Acogida neta: <b>${m.colapso} hab.</b>
+      </div>
+    </div>
+
+    <div style="font-size:11.5px; line-height:1.4;">
+      <span style="color:var(--success); font-weight:600;">✔ Ventajas:</span> ${m.badges.join(", ")}<br>
+      <span style="color:var(--mu);">ℹ️ Fiabilidad del dato: <b>${m.fiab}%</b></span>
+    </div>
+
+    <div style="display:flex; gap:8px; margin-top:12px;">
+      <button class="btn sm" id="mini_add_cmp" style="flex:1;">+ Comparar</button>
+      <button class="btn o sm" id="mini_go_ficha" style="flex:1;">Ver Ficha</button>
+    </div>
+  `;
+
+  $("mini_add_cmp").onclick = () => {
+    addCmp(sel);
+    showView("comp");
+  };
+  $("mini_go_ficha").onclick = () => {
+    $("ficha_selector").value = sel;
+    loadFicha(sel);
+    showView("ficha");
+  };
+}
+
+// DIBUJAR TOP 5
+function drawTop5() {
+  const F = getFilters();
+  const filtered = M.filter(m => passFilter(m, F));
+  const sortKey = cur === "limit" ? "ica" : cur;
+  const list = [...filtered].sort((a,b) => b[sortKey] - a[sortKey]).slice(0, 5);
+  const u = V.find(v => v[0] === cur)?.[3] || "";
+
+  $("top").innerHTML = list.map((m, i) => `
+    <li data-n="${m.n}">
+      <span><b>${i+1}.</b> ${m.n}</span>
+      <b>${m[sortKey]}${u}</b>
+    </li>
+  `).join("") || "<li style='color:var(--mu);'>Sin resultados con estos filtros</li>";
+
+  $("top").querySelectorAll("li[data-n]").forEach(li => {
+    li.onclick = () => {
+      sel = li.dataset.n;
+      refresh();
+    };
+  });
+}
+
+function refresh() {
+  drawLeafletMarkers();
+  drawSvgMap();
+  drawMiniFicha();
+  drawTop5();
+}
+
+// FILTROS EN TIEMPO REAL
+["q", "f_comarca", "f_limit"].forEach(id => $(id).oninput = refresh);
+["pop", "pr", "tr"].forEach(id => {
+  $(id).oninput = () => {
+    $("pv").textContent = $("pop").value;
+    $("prv").textContent = $("pr").value;
+    $("tv").textContent = $("tr").value;
+    refresh();
+  };
+});
+$("rst").onclick = () => {
+  $("q").value = "";
+  $("f_comarca").value = "all";
+  $("f_limit").value = "all";
+  $("pop").value = 50; $("pv").textContent = 50;
+  $("pr").value = 3500; $("prv").textContent = 3500;
+  $("tr").value = 0; $("tv").textContent = 0;
+  refresh();
+};
+
+document.querySelectorAll("[name=v]").forEach(r => {
+  r.onchange = () => {
+    cur = r.value;
+    refresh();
+  };
+});
+
+
+// ==========================================
+// QUIZ & RECOMENDADOR INTELIGENTE
+// ==========================================
+const presets = {
+  fam:  { viv: 25, san: 30, esc: 30, tra: 10, amb: 5,  label: "Familia con hijos" },
+  jov:  { viv: 30, san: 10, esc: 5,  tra: 40, amb: 15, label: "Joven profesional" },
+  may:  { viv: 15, san: 45, esc: 0,  tra: 20, amb: 20, label: "Persona mayor" },
+  tele: { viv: 20, san: 15, esc: 15, tra: 10, amb: 40, label: "Teletrabajador / Naturaleza" },
+  inv:  { viv: 35, san: 10, esc: 10, tra: 30, amb: 15, label: "Inversor / Promotor" },
+  adm:  { viv: 15, san: 35, esc: 35, tra: 10, amb: 5,  label: "Gestor Territorial" }
+};
+
+function applyPreset(p) {
+  $("w_viv").value = p.viv; $("wv_viv").textContent = p.viv + "%";
+  $("w_san").value = p.san; $("wv_san").textContent = p.san + "%";
+  $("w_esc").value = p.esc; $("wv_esc").textContent = p.esc + "%";
+  $("w_tra").value = p.tra; $("wv_tra").textContent = p.tra + "%";
+  $("w_amb").value = p.amb; $("wv_amb").textContent = p.amb + "%";
+  runRecommender();
+}
+
+document.querySelectorAll(".quiz-preset-btn").forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll(".quiz-preset-btn").forEach(btn => btn.classList.remove("on"));
+    b.classList.add("on");
+    applyPreset(presets[b.dataset.preset]);
+  };
+});
+
+["w_viv", "w_san", "w_esc", "w_tra", "w_amb"].forEach(id => {
+  $(id).oninput = () => {
+    const key = id.replace("w_", "");
+    $("wv_" + key).textContent = $(id).value + "%";
+    runRecommender();
+  };
+});
+["qz_budget", "qz_size", "qz_time", "qz_nocar"].forEach(id => $(id).onchange = runRecommender);
+
+function runRecommender() {
+  const wviv = +$("w_viv").value;
+  const wsan = +$("w_san").value;
+  const wesc = +$("w_esc").value;
+  const wtra = +$("w_tra").value;
+  const wamb = +$("w_amb").value;
+  const sumW = (wviv + wsan + wesc + wtra + wamb) || 1;
+
+  const maxPrice = +$("qz_budget").value;
+  const sizeType = $("qz_size").value;
+  const maxTime = $("qz_time").value;
+  const noCar = $("qz_nocar").value === "yes";
+
+  const scored = M.map(m => {
+    const sViv = cl(100 - (m.prc - 1100) / 24);
+    const sSan = cl(m.hmed <= 1000 ? 95 : m.hmed <= 1400 ? 75 : m.hmed <= 1500 ? 50 : 25);
+    const sEsc = cl(100 - (m.esc_oc - 70) * 3);
+    const sTra = m.trans;
+    const sAmb = m.amb;
+
+    let score = (sViv * wviv + sSan * wsan + sEsc * wesc + sTra * wtra + sAmb * wamb) / sumW;
+
+    if (m.prc > maxPrice) score -= 15;
+    if (sizeType === "rural" && m.pop >= 5) score -= 20;
+    if (sizeType === "semi" && (m.pop < 5 || m.pop > 20)) score -= 20;
+    if (sizeType === "urbano" && m.pop < 20) score -= 20;
+    if (maxTime === "45" && m.tiempo > 45) score -= 25;
+    if (maxTime === "60" && m.tiempo > 60) score -= 20;
+    if (noCar && m.trans < 45) score -= 25;
+
+    const reasons = [];
+    if (sViv >= 70) reasons.push("Precio muy asequible (" + m.prc + " €/m²)");
+    if (sSan >= 70) reasons.push("Excelente ratio médica (" + m.hmed + " hab/méd)");
+    if (sEsc >= 70) reasons.push("Holgura escolar (" + m.esc_oc + "% ocupación)");
+    if (sTra >= 50) reasons.push("Buena conectividad con Madrid (" + m.tiempo + " min)");
+    if (sAmb >= 85) reasons.push("Entorno natural de alto valor (" + m.amb + "/100)");
+
+    const renuncias = [];
+    if (m.tiempo > 50) renuncias.push("Trayecto a Madrid > 50 min");
+    if (m.trans < 30) renuncias.push("Baja frecuencia de transporte público");
+    if (m.prc > 2600) renuncias.push("Precio vivienda elevado");
+    if (m.limit === "Sanidad") renuncias.push("Cupos médicos al límite");
+    if (m.limit === "Educación") renuncias.push("Pocas vacantes escolares libres");
+
+    return {
+      m,
+      score: Math.max(10, Math.min(99, Math.round(score))),
+      reasons: reasons.slice(0, 3),
+      renuncias: renuncias.slice(0, 2)
+    };
+  });
+
+  scored.sort((a,b) => b.score - a.score);
+  const topList = scored.slice(0, 6);
+
+  $("rec_cards_grid").innerHTML = topList.map((item, idx) => `
+    <div style="background:#fff; border:1px solid var(--bd); border-radius:8px; padding:14px; display:flex; flex-direction:column; justify-content:space-between; box-shadow:0 1px 3px rgba(0,0,0,0.03);">
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <div>
+            <b style="font-size:16px; color:#0f172a;">${idx+1}. ${item.m.n}</b>
+            <div style="color:var(--mu); font-size:11px;">${item.m.com} · ${item.m.pop}k hab. · ${item.m.tiempo} min Madrid</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:20px; font-weight:800; color:${item.score >= 70 ? 'var(--success)' : 'var(--ac)'};">${item.score}%</div>
+            <div style="font-size:9.5px; color:var(--mu); font-weight:600;">AFINIDAD</div>
+          </div>
+        </div>
+
+        <div class="b ${item.score >= 70 ? 'green' : ''}" style="margin:6px 0 10px;"><i style="width:${item.score}%"></i></div>
+
+        <div style="font-size:12px; margin-bottom:8px;">
+          <div style="font-weight:700; color:var(--success); margin-bottom:3px;">✔ Por qué te encaja:</div>
+          <ul style="padding-left:16px; margin:0; line-height:1.45; color:#334155;">
+            ${item.reasons.map(r => `<li>${r}</li>`).join("") || "<li>Puntuación equilibrada</li>"}
+          </ul>
+        </div>
+
+        <div style="font-size:11.5px; margin-bottom:10px; background:#fef2f2; border:1px solid #fecaca; border-radius:6px; padding:6px 8px;">
+          <b style="color:#b91c1c;">⚠️ A tener en cuenta:</b>
+          <div style="color:#7f1d1d; margin-top:2px;">${item.renuncias.join(" · ") || "Sin restricciones severas"}</div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <button class="btn sm" onclick="addCmp('${item.m.n}'); showView('comp');" style="flex:1;">+ Comparar</button>
+        <button class="btn o sm" onclick="sel='${item.m.n}'; loadFicha('${item.m.n}'); showView('ficha');" style="flex:1;">Ver Ficha</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+
+// ==========================================
+// COMPARADOR MULTIDIMENSIONAL
+// ==========================================
+function addCmp(name) {
+  if (!cmp.includes(name) && cmp.length < 4) {
+    cmp.push(name);
+    drawCmp();
+  }
+}
+
+function drawCmp() {
+  $("chosen").innerHTML = cmp.map(n => `
+    <span class="ch">
+      ${n} <a href="#" data-x="${n}">✕</a>
+    </span>
+  `).join("") || "<span style='color:var(--mu);'>Ningún municipio seleccionado. Añade hasta 4.</span>";
+
+  $("chosen").querySelectorAll("[data-x]").forEach(a => {
+    a.onclick = e => {
+      e.preventDefault();
+      cmp = cmp.filter(x => x !== a.dataset.x);
+      drawCmp();
+    };
+  });
+
+  const C = cmp.map(mm).filter(Boolean);
+  if (C.length === 0) {
+    $("ctab").innerHTML = "<tr><td>Selecciona municipios para comparar sus indicadores oficiales.</td></tr>";
+    return;
+  }
+
+  renderRadarChart("comp_radar_svg", C, 380, 300);
+
+  const rows = [
+    { label: "Índice ICA Global", key: "ica", unit: "/100", highBest: true },
+    { label: "Capacidad Neta sin Colapso", key: "colapso", unit: " hab.", highBest: true },
+    { label: "Cuello de Botella Dominante", key: "limit", isText: true },
+    { label: "Población Padrón", key: "pop", unit: " mil", highBest: false },
+    { label: "Precio Compra", key: "prc", unit: " €/m²", highBest: false },
+    { label: "Habitantes por Médico", key: "hmed", unit: " hab/méd", highBest: false },
+    { label: "Ocupación Escolar", key: "esc_oc", unit: "%", highBest: false },
+    { label: "Tiempo a Madrid", key: "tiempo", unit: " min", highBest: false },
+    { label: "Transporte & Conectividad", key: "trans", unit: "/100", highBest: true },
+    { label: "Cobertura Fibra Óptica", key: "fib", unit: "%", highBest: true },
+    { label: "Medioambiente & Naturaleza", key: "amb", unit: "/100", highBest: true },
+    { label: "Presupuesto Municipal", key: "pres_pc", unit: " €/hab", highBest: true },
+    { label: "Fiabilidad del Dato Oficial", key: "fiab", unit: "%", highBest: true }
+  ];
+
+  let h = "<tr><th>Dimensión / Indicador</th>" + C.map(m => `<th style="text-align:center;">${m.n}<br><small style="font-weight:normal; color:var(--mu);">${m.com}</small></th>`).join("") + "</tr>";
+
+  rows.forEach(r => {
+    h += `<tr><td><b>${r.label}</b></td>`;
+    
+    if (r.isText) {
+      C.forEach(m => {
+        h += `<td style="text-align:center;"><span class="badge-alert red">⚠️ ${m.limit}</span></td>`;
+      });
+    } else {
+      const vals = C.map(m => m[r.key]);
+      const bestVal = r.highBest ? Math.max(...vals) : Math.min(...vals);
+      const mx = Math.max(...vals) || 1;
+
+      C.forEach(m => {
+        const isBest = C.length > 1 && m[r.key] === bestVal;
+        const pct = Math.max(10, Math.min(100, Math.round((m[r.key] / mx) * 100)));
+        h += `
+          <td style="text-align:center; ${isBest ? 'background:#f0fdf4;' : ''}">
+            <b style="${isBest ? 'color:var(--success);' : ''}">${m[r.key]}</b><span style="color:var(--mu); font-size:11px;">${r.unit}</span>
+            <div class="b ${isBest ? 'green' : ''}" style="margin-top:4px;"><i style="width:${pct}%"></i></div>
+          </td>
+        `;
+      });
+    }
+    h += "</tr>";
+  });
+
+  $("ctab").innerHTML = h;
+}
+
+$("addsel").innerHTML = M.map(m => `<option value="${m.n}">${m.n} (${m.com})</option>`).join("");
+$("addbtn").onclick = () => addCmp($("addsel").value);
+$("clr").onclick = () => { cmp = []; drawCmp(); };
+
+
+// ==========================================
+// FICHA MUNICIPAL DETALLADA & SHAP
+// ==========================================
+function loadFicha(name) {
+  const m = mm(name) || M[0];
+  sel = m.n;
+
+  $("ficha_header_card").innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+      <div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <b style="font-size:22px; color:#0f172a;">${m.n}</b>
+          <span class="bd obs">Código INE: ${m.ine}</span>
+          <span class="bd proy">${m.tip}</span>
+          <span class="bd est">Clúster ${m.cluster}</span>
+        </div>
+        <div style="color:var(--mu); font-size:12.5px; margin-top:3px;">
+          Comarca: <b>${m.com}</b> · Población: <b>${m.pop} mil hab.</b> · Tiempo a Madrid Centro: <b>${m.tiempo} min</b>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <div style="text-align:right;">
+          <div style="font-size:11px; color:var(--mu); font-weight:600;">ÍNDICE ICA</div>
+          <div style="font-size:26px; font-weight:800; color:${m.ica>=60?'var(--success)':m.ica>=40?'var(--warning)':'var(--danger)'};">${m.ica}<small style="font-size:14px;">/100</small></div>
+        </div>
+        <div style="border-left:1px solid var(--bd); padding-left:10px; text-align:right;">
+          <div style="font-size:11px; color:var(--mu); font-weight:600;">FIABILIDAD DATO</div>
+          <div style="font-size:26px; font-weight:800; color:var(--info);">${m.fiab}%</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;">
+      ${m.badges.map(b => `<span class="badge-alert blue">🏷️ ${b}</span>`).join("")}
+      <span class="badge-alert ${m.limit === 'Sanidad' ? 'red' : 'amber'}">⚠️ Cuello de botella: ${m.limit}</span>
+    </div>
+  `;
+
+  const maxCap = Math.max(m.cap_san, m.cap_esc, m.cap_viv, 100);
+  $("ficha_bottleneck_box").innerHTML = `
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <div>
+        <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:3px;">
+          <span>🩺 Capacidad Sanitaria (Atención Primaria):</span>
+          <b>${m.cap_san} personas</b>
+        </div>
+        <div class="b ${m.limit === 'Sanidad' ? 'red' : 'green'}"><i style="width:${(m.cap_san/maxCap)*100}%"></i></div>
+        <small style="color:var(--mu); font-size:10.5px;">Médicos AP: ${m.med} · Ratio: ${m.hmed} hab/méd (Límite: 1.500)</small>
+      </div>
+
+      <div>
+        <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:3px;">
+          <span>🏫 Capacidad Educativa (Aulas libres):</span>
+          <b>${m.cap_esc} personas</b>
+        </div>
+        <div class="b ${m.limit === 'Educación' ? 'red' : 'green'}"><i style="width:${(m.cap_esc/maxCap)*100}%"></i></div>
+        <small style="color:var(--mu); font-size:10.5px;">Ocupación actual en aulas: ${m.esc_oc}% (Límite de saturación: 95%)</small>
+      </div>
+
+      <div>
+        <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:3px;">
+          <span>🏠 Capacidad Residencial (Vivienda vacía & suelo):</span>
+          <b>${m.cap_viv} personas</b>
+        </div>
+        <div class="b ${m.limit === 'Vivienda' ? 'red' : 'green'}"><i style="width:${(m.cap_viv/maxCap)*100}%"></i></div>
+        <small style="color:var(--mu); font-size:10.5px;">Precio medio: ${m.prc} €/m² · Suelo calificado disponible</small>
+      </div>
+
+      <div style="background:#fef2f2; border:1.5px solid #f87171; border-radius:6px; padding:10px; margin-top:4px;">
+        <b style="color:#991b1b; font-size:13px;">Cuello de Botella Vinculante: ${m.limit.toUpperCase()}</b>
+        <div style="color:#7f1d1d; font-size:11.5px; margin-top:2px;">
+          Capacidad neta sin colapso: <b>${m.colapso} habitantes</b>. En virtud de la complementariedad no compensatoria, el municipio no puede acoger más residentes sin colapsar servicios.
+        </div>
+      </div>
+    </div>
+  `;
+
+  renderRadarChart("ficha_radar_svg", [m], 340, 280);
+
+  const shapFactors = [
+    { name: "Asequibilidad de Vivienda", val: Math.round((2400 - m.prc) / 45) },
+    { name: "Dotación Médica", val: Math.round((1450 - m.hmed) / 25) },
+    { name: "Holgura en Colegios", val: Math.round((88 - m.esc_oc) * 1.5) },
+    { name: "Accesibilidad a Madrid", val: Math.round((50 - m.tiempo) * 0.8) },
+    { name: "Calidad Ambiental", val: Math.round((m.amb - 75) * 0.9) },
+    { name: "Fibra Óptica", val: Math.round((m.fib - 85) * 0.6) }
+  ];
+
+  $("ficha_shap_box").innerHTML = shapFactors.map(f => {
+    const isPos = f.val >= 0;
+    const width = Math.min(50, Math.abs(f.val) * 2.5);
+    return `
+      <div class="shap-row">
+        <span>${f.name}</span>
+        <div class="shap-bar-wrap">
+          <div class="shap-center-line"></div>
+          ${isPos 
+            ? `<div class="shap-bar-pos" style="width:${width}%;"></div>` 
+            : `<div class="shap-bar-neg" style="width:${width}%;"></div>`}
+        </div>
+        <b style="text-align:right; color:${isPos ? 'var(--success)' : 'var(--danger)'};">${isPos ? '+' : ''}${f.val} pts</b>
+      </div>
+    `;
+  }).join("");
+
+  const rows = [
+    { dim: "Demografía", ind: "Población Oficial Padrón", val: m.pop + " mil hab.", avg: "14.2 mil", type: "obs", src: "INE Padrón 1-ene-2025" },
+    { dim: "Vivienda", ind: "Precio Medio de Oferta", val: m.prc + " €/m²", avg: "2.350 €/m²", type: "est", src: "Catastro / MIVAU / AVM" },
+    { dim: "Sanidad", ind: "Ratio Habitantes por Médico", val: m.hmed + " hab/méd", avg: "1.440 hab/méd", type: "obs", src: "Centros Sanitarios CAM" },
+    { dim: "Educación", ind: "Tasa Ocupación Escolar", val: m.esc_oc + "%", avg: "87.8%", type: "obs", src: "Registro Colegios CAM" },
+    { dim: "Transporte", ind: "Paradas de Transporte", val: m.par + " paradas", avg: "62 paradas", type: "obs", src: "CRTM Datos Abiertos" },
+    { dim: "Conectividad", ind: "Cobertura Fibra Óptica", val: m.fib + "%", avg: "89.4%", type: "obs", src: "Datos.gob.es / Operadores" },
+    { dim: "Medioambiente", ind: "Índice de Calidad Ambiental", val: m.amb + "/100", avg: "76/100", type: "obs", src: "Calidad Aire CAM / MITECO" },
+    { dim: "Economía", ind: "Presupuesto Municipal per Cápita", val: m.pres_pc + " €/hab", avg: "980 €/hab", type: "obs", src: "Hacienda SGFAL CONPREL" },
+    { dim: "Capacidad", ind: "Capacidad Neta sin Colapso", val: m.colapso + " hab.", avg: "350 hab.", type: "proy", src: "Modelo ICA LoDCOREMadrid" }
+  ];
+
+  $("ficha_table_tbody").innerHTML = rows.map(r => `
+    <tr>
+      <td><b>${r.dim}</b></td>
+      <td>${r.ind}</td>
+      <td><b>${r.val}</b></td>
+      <td style="color:var(--mu);">${r.avg}</td>
+      <td><span class="bd ${r.type}">${r.type === 'obs' ? 'Observado' : r.type === 'est' ? 'Estimado' : 'Proyectado'}</span></td>
+      <td>${r.src}</td>
+    </tr>
+  `).join("");
+}
+
+$("ficha_selector").innerHTML = M.map(m => `<option value="${m.n}">${m.n}</option>`).join("");
+$("ficha_selector").onchange = () => loadFicha($("ficha_selector").value);
+
+
+// ==========================================
+// CUADRO DE MANDO (DASHBOARD)
+// ==========================================
+function drawDashboard() {
+  const avgIca = (M.reduce((acc, m) => acc + m.ica, 0) / M.length).toFixed(1);
+  const totalAcogida = M.reduce((acc, m) => acc + m.colapso, 0);
+  $("db_ica_medio").textContent = avgIca + " / 100";
+  $("db_acogida_total").textContent = totalAcogida.toLocaleString() + " hab.";
+
+  const sanCount = M.filter(m => m.limit === "Sanidad").length;
+  const escCount = M.filter(m => m.limit === "Educación").length;
+  const vivCount = M.filter(m => m.limit === "Vivienda").length;
+
+  $("db_bottleneck_distribution").innerHTML = `
+    <div>
+      <div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:3px;">
+        <span>🩺 Bloqueo por Atención Primaria (Sanidad)</span>
+        <b>${sanCount} municipios (${Math.round((sanCount/M.length)*100)}%)</b>
+      </div>
+      <div class="b red"><i style="width:${(sanCount/M.length)*100}%"></i></div>
+    </div>
+    <div>
+      <div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:3px;">
+        <span>🏫 Bloqueo por Plazas Escolares (Educación)</span>
+        <b>${escCount} municipios (${Math.round((escCount/M.length)*100)}%)</b>
+      </div>
+      <div class="b amber"><i style="width:${(escCount/M.length)*100}%"></i></div>
+    </div>
+    <div>
+      <div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:3px;">
+        <span>🏠 Bloqueo por Suelo / Precio (Vivienda)</span>
+        <b>${vivCount} municipios (${Math.round((vivCount/M.length)*100)}%)</b>
+      </div>
+      <div class="b"><i style="width:${(vivCount/M.length)*100}%"></i></div>
+    </div>
+  `;
+
+  const comarcas = [...new Set(M.map(m => m.com))];
+  $("db_comarca_tbody").innerHTML = comarcas.map(c => {
+    const subset = M.filter(m => m.com === c);
+    const popSum = subset.reduce((acc, m) => acc + m.pop, 0).toFixed(1);
+    const icaMean = (subset.reduce((acc, m) => acc + m.ica, 0) / subset.length).toFixed(1);
+    const acogSum = subset.reduce((acc, m) => acc + m.colapso, 0);
+    
+    const sC = subset.filter(m => m.limit === "Sanidad").length;
+    const eC = subset.filter(m => m.limit === "Educación").length;
+    const vC = subset.filter(m => m.limit === "Vivienda").length;
+    const dom = sC >= eC && sC >= vC ? "Sanidad" : eC >= vC ? "Educación" : "Vivienda";
+
+    return `
+      <tr>
+        <td><b>${c}</b></td>
+        <td>${subset.length}</td>
+        <td>${popSum}k</td>
+        <td><b>${icaMean}</b></td>
+        <td><span class="badge-alert ${dom==='Sanidad'?'red':'amber'}">${dom}</span></td>
+        <td><b>${acogSum.toLocaleString()}</b></td>
+      </tr>
+    `;
+  }).join("");
+
+  $("db_muns_tbody").innerHTML = M.map(m => `
+    <tr>
+      <td><b>${m.n}</b></td>
+      <td>${m.com}</td>
+      <td>${m.pop}k</td>
+      <td><span class="bd ${m.nivel==='Alta'?'proy':m.nivel==='Media'?'est':'sim'}">${m.ica}</span></td>
+      <td><span class="badge-alert ${m.limit==='Sanidad'?'red':'amber'}">${m.limit}</span></td>
+      <td><b>${m.colapso}</b></td>
+      <td>${m.hmed}</td>
+      <td>${m.esc_oc}%</td>
+      <td>${m.prc} €</td>
+      <td><button class="btn sm o" onclick="sel='${m.n}'; loadFicha('${m.n}'); showView('ficha');">Ficha</button></td>
+    </tr>
+  `).join("");
+}
+
+
+// ==========================================
+// SIMULADOR WHAT-IF DE INVERSIONES
+// ==========================================
+function runSimulator() {
+  const budget = +$("sim_budget").value * 1000000;
+  const costMed = +$("sim_cost_med").value;
+  const costEsc = +$("sim_cost_esc").value;
+  const uncertainty = +$("sim_uncertainty").value;
+  const strat = document.querySelector("[name=sim_strat]:checked").value;
+
+  $("sim_budget_val").textContent = ($("sim_budget").value) + ".0 M€";
+  $("sim_cost_med_val").textContent = costMed.toLocaleString() + " €";
+  $("sim_cost_esc_val").textContent = costEsc.toLocaleString() + " €";
+
+  let remBudget = budget;
+  let totalMed = 0;
+  let totalEsc = 0;
+  let rescuedMuns = 0;
+  let addedHab = 0;
+
+  let candidates = [...M];
+  if (strat === "cohesion") {
+    candidates.sort((a,b) => a.pop - b.pop);
+  } else if (strat === "rescate") {
+    candidates.sort((a,b) => a.colapso - b.colapso);
+  } else {
+    candidates.sort((a,b) => b.ica - a.ica);
+  }
+
+  const results = candidates.map(m => {
+    let assigned = 0;
+    let newMed = 0;
+    let newEsc = 0;
+    let oldCap = m.colapso;
+    let newCap = oldCap;
+
+    if (remBudget > 500000) {
+      if (m.limit === "Sanidad") {
+        const neededMed = Math.ceil((m.pop * 1000) / 1400) - m.med;
+        const medToAdd = Math.max(1, neededMed);
+        const cost = medToAdd * costMed;
+        if (remBudget >= cost) {
+          remBudget -= cost;
+          assigned += cost;
+          newMed = medToAdd;
+          totalMed += medToAdd;
+          newCap += Math.round(medToAdd * 1400 * uncertainty);
+        }
+      } else if (m.limit === "Educación") {
+        const cost = 50 * costEsc;
+        if (remBudget >= cost) {
+          remBudget -= cost;
+          assigned += cost;
+          newEsc = 50;
+          totalEsc += 50;
+          newCap += Math.round(250 * uncertainty);
+        }
+      }
+    }
+
+    if (assigned > 0 && oldCap === 0) rescuedMuns++;
+    addedHab += (newCap - oldCap);
+
+    return {
+      m,
+      assigned,
+      newMed,
+      newEsc,
+      oldCap,
+      newCap,
+      diff: newCap - oldCap
+    };
+  });
+
+  $("sim_out_hab").textContent = "+" + addedHab.toLocaleString();
+  $("sim_out_med").textContent = totalMed;
+  $("sim_out_esc").textContent = totalEsc;
+  $("sim_out_muns").textContent = rescuedMuns;
+
+  $("sim_tbody_results").innerHTML = results.filter(r => r.assigned > 0).map(r => `
+    <tr>
+      <td><b>${r.m.n}</b></td>
+      <td>${r.m.com}</td>
+      <td><span class="badge-alert red">${r.m.limit}</span></td>
+      <td><b>${(r.assigned/1000000).toFixed(2)} M€</b></td>
+      <td>+${r.newMed}</td>
+      <td>+${r.newEsc}</td>
+      <td>${r.oldCap}</td>
+      <td><b>${r.newCap}</b></td>
+      <td style="color:var(--success); font-weight:700;">+${r.diff} hab.</td>
+    </tr>
+  `).join("") || "<tr><td colspan='9' style='text-align:center;'>Aumenta el presupuesto para asignar recursos.</td></tr>";
+}
+
+$("sim_budget").oninput = runSimulator;
+$("sim_cost_med").oninput = runSimulator;
+$("sim_cost_esc").oninput = runSimulator;
+$("sim_uncertainty").onchange = runSimulator;
+document.querySelectorAll("[name=sim_strat]").forEach(r => r.onchange = runSimulator);
+$("sim_run_btn").onclick = runSimulator;
+
+
+// ==========================================
+// ESCENARIOS DE CRECIMIENTO (+5% / +10%)
+// ==========================================
+function runStressTest() {
+  const rate = +$("esc_growth_rate").value;
+  const com = $("esc_filter_comarca").value;
+
+  const subset = com === "all" ? M : M.filter(m => m.com === com);
+
+  let nuevosTotal = 0;
+  let colSan = 0;
+  let colEsc = 0;
+
+  const rows = subset.map(m => {
+    const nuevos = Math.round(m.pop * 1000 * rate);
+    nuevosTotal += nuevos;
+
+    const newPop = Math.round(m.pop * 1000 + nuevos);
+    const newHmed = Math.round(newPop / m.med);
+    const isSanCol = newHmed > 1500;
+    if (isSanCol) colSan++;
+
+    const nuevosAlum = Math.round(nuevos * 0.17);
+    const plazasTotales = Math.round((m.pop * 1000 * 0.17) / (m.esc_oc / 100));
+    const newEscOc = Math.min(105, ((m.pop * 1000 * 0.17 + nuevosAlum) / plazasTotales * 100)).toFixed(1);
+    const isEscCol = newEscOc > 95;
+    if (isEscCol) colEsc++;
+
+    const isGlobalCol = isSanCol || isEscCol;
+
+    return `
+      <tr>
+        <td><b>${m.n}</b></td>
+        <td>${(m.pop).toFixed(1)}k</td>
+        <td><b>${(newPop/1000).toFixed(1)}k</b> (+${nuevos})</td>
+        <td>+${nuevos}</td>
+        <td><b style="color:${isSanCol?'var(--danger)':'inherit'};">${newHmed}</b> <small style="color:var(--mu);">(${m.hmed})</small></td>
+        <td>+${nuevosAlum}</td>
+        <td><b style="color:${isEscCol?'var(--danger)':'inherit'};">${newEscOc}%</b> <small style="color:var(--mu);">(${m.esc_oc}%)</small></td>
+        <td><span class="badge-alert ${isSanCol?'red':'green'}">${isSanCol?'Colapso':'Normal'}</span></td>
+        <td><span class="badge-alert ${isEscCol?'red':'green'}">${isEscCol?'Colapso':'Normal'}</span></td>
+        <td><span class="badge-alert ${isGlobalCol?'red':'green'}">${isGlobalCol?'🔴 Crítico':'🟢 Sostenible'}</span></td>
+      </tr>
+    `;
+  });
+
+  $("esc_kpi_nuevos").textContent = "+" + nuevosTotal.toLocaleString();
+  $("esc_kpi_san").textContent = colSan;
+  $("esc_kpi_esc").textContent = colEsc;
+  $("esc_tbody").innerHTML = rows.join("");
+}
+
+$("esc_growth_rate").onchange = runStressTest;
+$("esc_filter_comarca").onchange = runStressTest;
+
+
+// ==========================================
+// NAVEGACIÓN Y PERFIL DE USUARIO
+// ==========================================
+function showView(id) {
+  document.querySelectorAll(".v").forEach(s => s.classList.toggle("on", s.id === id));
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.v === id));
+  window.scrollTo({ top: 0, behavior: "smooth" });
+
+  if (id === "mapa" && leafletMap) {
+    setTimeout(() => leafletMap.invalidateSize(), 150);
+  }
+}
+
+document.querySelectorAll("nav button").forEach(b => {
+  b.onclick = () => showView(b.dataset.v);
+});
+
+$("aud").onchange = () => {
+  const aud = $("aud").value;
+  currentProfile = aud;
+  if (aud === "admin") {
+    cur = "colapso";
+    showView("dashboard");
+  } else if (aud === "inversor") {
+    cur = "prc";
+    applyPreset(presets.inv);
+    showView("quiz");
+  } else {
+    cur = "ica";
+    showView("mapa");
+  }
+  refresh();
+};
+
+// ==========================================
+// INICIALIZACIÓN
+// ==========================================
+initLeafletMap();
+refresh();
+drawCmp();
+runRecommender();
+loadFicha("Buitrago del Lozoya");
+drawDashboard();
+runSimulator();
+runStressTest();
+
+</script>
+</body>
+</html>

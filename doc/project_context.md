@@ -132,18 +132,15 @@ Datathon2026/
 │   ├── estructura.md                           ← inventario fichero a fichero
 │   ├── legacy/                                 ← borrador anterior (referencia)
 │   └── modelos/                                ← fichas de M1-M4 (para el jurado)
-├── mcp/                                        ← loaders del tronco hacia Oracle
-│   ├── generar_estado_base.py                  ← PV_BASE_MODELOS (estado base)
-│   └── cargar_onnx.py                          ← sube los .onnx a la base
-├── web/                                        ← VISOR: todo lo exclusivo de la app APEX 215
-│   ├── geo_municipios_madrid.geojson           ← polígonos de los 155 (mapa)
-│   ├── limite_madrid.json                      ← límite de la CM (front del mapa)
+├── mcp/                                        ← loaders del tronco + tooling del visor APEX
+│   ├── generar_estado_base.py / cargar_onnx.py ← estado base y carga de los 11 .onnx
+│   ├── front_mapa / front_simulador / front_comparador (fronts de APEX)
+│   ├── actualizar_front_* / anadir_pagina_* / menu_*  ← ciclos de aplicación de fronts/menús
 │   ├── descargar_geojson.py / completar_geojson.py  ← pipeline geo Overpass → PV_GEO_MUNIS
-│   ├── front_mapa.py / actualizar_front_mapa.py / anadir_pagina_mapa.py
-│   ├── front_simulador.py / actualizar_front_simulador.py / canonizar_front_sim.py
-│   ├── aplicar_front_simulador.py / editar_export_simulador.py / editar_export_contenido.py
-│   ├── importar_export.py                      ← reimport de la app
-│   └── backups/                                ← exports de la app (sql_original.sql = punto de restauración)
+│   └── importar_export.py / editar_export_*.py  ← export/import de la app ("MadridNext")
+├── web/                                        ← assets del visor (solo datos del mapa)
+│   ├── geo_municipios_madrid.geojson           ← polígonos de los 155 (mapa)
+│   └── limite_madrid.json                      ← límite de la CM (front del mapa)
 ├── oracle_db/
 │   ├── models/                                 ← SALIDA: .onnx + fichas (11: M1-M4)
 │   ├── sql/                                    ← estado base + PV_SIMULA + PV_MAPA/PV_GEO
@@ -196,9 +193,11 @@ Convenciones:
 | Página | Nombre | Uso nuevo |
 |---|---|---|
 | 1 | Inicio | Enlace al dashboard |
-| **10** | **Perfil Institucional** | **Aquí vive el simulador** (región rails PL/SQL, procesos AJAX `DATOS` y `SIMULAR`) |
+| **10** | **Simulador What-If** | **Aquí vive el simulador** (región rails PL/SQL, procesos AJAX `DATOS` y `SIMULAR`) |
 | 20 | Perfil Ciudadano | Sin perfil: se eliminará o quedará congelada |
 | 30 | Datos | Documentación de fuentes (se conserva) |
+| 40 | Mapa | Mapa interactivo (procesos `GEO` y `PRED`; clic → WI, menú contextual → Comparador) |
+| **50** | **Comparador** | Comparativa de 2..n municipios con las métricas del mapa (`CMP` → `PV_MAPA(año, cod)`), radar de dims y tabla; menú lateral secuencia 35 |
 
 Tablas Oracle ya cargadas por el equipo (se conservan salvo cambios mínimos):
 

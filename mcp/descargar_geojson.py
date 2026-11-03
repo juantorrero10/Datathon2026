@@ -40,8 +40,8 @@ sys.path.insert(0, str(REPO))
 from src.common.dataset import cargar_municipios  # noqa: E402
 from src.common.oracle import conectar  # noqa: E402
 
-OUT_JSON = REPO / "web" / "geo_municipios_madrid.geojson"
-OUT_RAW = REPO / "web" / "osm_raw_cm.json"   # caché local: NO versionado (.gitignore)
+OUT_JSON = REPO / "oracle_db" / "geo_municipios_madrid.geojson"
+OUT_RAW = REPO / "oracle_db" / "osm_raw_cm.json"   # caché local: NO versionado (.gitignore)
 SQL_REF = REPO / "oracle_db" / "sql" / "05_pv_geo_munis.sql"
 
 MIRRORS = [

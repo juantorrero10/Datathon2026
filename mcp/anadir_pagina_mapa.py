@@ -19,10 +19,10 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
-from web.front_mapa import CABECERA_MAPA, FRONT_MAPA  # noqa: E402
+from mcp.front_mapa import CABECERA_MAPA, FRONT_MAPA  # noqa: E402
 from src.common.oracle import conectar  # noqa: E402
 
-BACKUPS = REPO / "web" / "backups"
+BACKUPS = REPO / "oracle_db" / "backups"
 APP_ID = 215
 PAGE_ID = 40
 
@@ -188,13 +188,13 @@ def main() -> None:
     texto = texto[:i30end] + bloque40 + texto[i30end:]
 
     # 5) menú: entrada 'Mapa' correcta (helper compartido)
-    from web.menu_mapa import coloca_entrada_mapa
+    from mcp.menu_mapa import coloca_entrada_mapa
     texto, detalle = coloca_entrada_mapa(texto)
     print(f"[mapa] menú: {detalle}")
 
     # 6) importar
     texto = re.sub(r"p_default_workspace_id=>\d+", "p_default_workspace_id=>NULL", texto, count=1)
-    from web.importar_export import sentencias
+    from mcp.importar_export import sentencias
     chunks = sentencias(texto)
 
     import os

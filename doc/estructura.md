@@ -71,8 +71,8 @@
 | `completar_geojson.py` | Rescate de un municipio individual (`MERGE` en la tabla sin recrearla). |
 | `front_mapa.py` · `actualizar_front_mapa.py` · `anadir_pagina_mapa.py` | HTML/JS del front de la pág. 40 y su ciclo de aplicación (única fuente de verdad del front del mapa). |
 | `aplicar_front_simulador.py` · `editar_export_simulador.py` + `editar_export_contenido.py` | Ciclo del front del Simulador (pág. 10) sobre el export: `editar_export_contenido.py` es la **única fuente de verdad del HTML/JS** del Simulador. |
-| `importar_export.py` | Reimport completo de la app 215: borra la app (ADMIN) e importa el export mutado (`web/backups/simulador.sql`, `p_default_workspace_id=>NULL`). |
-| `backups/` | Exports SQL de la app 215. **`sql_original.sql` es el punto de restauración oficial: no se sobreescribe.** |
+| `importar_export.py` | Reimport completo de la app 215: borra la app (ADMIN) e importa el export mutado (`oracle_db/backups/simulador.sql`, `p_default_workspace_id=>NULL`). |
+| `oracle_db/backups/` | Exports SQL de la app 215 (estado usuario + `simulador.sql`). **Nota: `sql_original.sql` (el punto de restauración original) fue eliminado por el equipo; el punto de restauración es hoy el más reciente de los `sql_*_estado_usuario.sql`.** |
 
 ## oracle_db/ — lo que vive dentro de la base, visto desde el repo
 
@@ -95,9 +95,9 @@
 | `01_estado_base.sql` | DDL + INSERTs de `PV_BASE_MODELOS` (155 filas con features de M1, M2, M3 y M4 — las M4 prefijadas VIV_/SAL_/PAR_ con su `T_DEPLOY`), generado por `mcp/generar_estado_base.py`. |
 | `03_pv_simula_v2.sql` | `PV_SIMULA(p_cod, p_anio, p_add_pop, p_add_viv, p_add_salud, p_add_esc, p_add_paradas)`: motor del simulador. M1 (factor; si año ≤ 2025 usa la serie real) → proyección M4 de stocks (viviendas/salud/paradas con composición geométrica h>5 y escuelas por proporción del "esperado por tamaño") → estado simulado (proyección + choque del usuario) → 5 `PREDICTION` de M2 → índice ponderado + factor limitante → CLOB JSON "antes/después". El bloque "antes" sale de `PV_BASE_MODELOS` (mismo estado que el mapa); `PV_MUN_BASE` solo aporta dims/índice del corte 2025. |
 | `04_pv_mapa.sql` | `PV_MAPA(p_anio)`: métricas masivas de los 155 municipios para el mapa (7 `PREDICTION` en línea: M3 → estado → 5×M4 → M6 → índice + factor limitante). Extrapolación sostenida: f(h>5) = POWER(f5, h/5). |
-| `05_pv_geo_munis.sql` | Referencia de `PV_GEO_MUNIS` (códigos + CLOB GeoJSON por municipio); los INSERTs van por binds desde `web/descargar_geojson.py`. |
+| `05_pv_geo_munis.sql` | Referencia de `PV_GEO_MUNIS` (códigos + CLOB GeoJSON por municipio); los INSERTs van por binds desde `mcp/descargar_geojson.py`. |
 
-## web/backups/ (movido desde oracle_db/backups/)
+## oracle_db/backups/ (movido desde oracle_db/backups/)
 
 | Fichero | Qué es |
 |---|---|
@@ -130,7 +130,7 @@ Clon del wallet de la Autonomous Database (eu-madrid, instancia `N590X9G2V58K2MZ
 
 1. **Tronco** (reproducible): `data/*.xlsx` → `scripts/run_*.py` → `oracle_db/models/*.onnx` → (`mcp/cargar_onnx.py` + `mcp/generar_estado_base.py`) → Oracle → `PV_SIMULA`/`PV_MAPA` → APEX. La pieza principal del proyecto son **los modelos y el análisis de datos**; el visor web es la capa de presentación.
 2. La simulación es **efímera**: nada se persiste.
-3. `web/backups/sql_original.sql` es la única manera de restaurar la app 215 si se rompe algo — no lo sobreescribas. Todo lo exclusivo de la página web vive en `web/`.
+3. `oracle_db/backups/sql_original.sql` es la única manera de restaurar la app 215 si se rompe algo — no lo sobreescribas. Todo lo exclusivo de la página web vive en `web/`.
 4. Toda feature del xlsx que entre al modelo **debe quedar declarada en la ficha JSON** (hash, orden de features, imputaciones).
 5. El front de APEX no lleva datos hardcodeados: todo lo visible sale del JSON de `PV_SIMULA` (o del proceso `DATOS` para la lista de municipios). Y **todos los botones llevan `type="button"`** — APEX envuelve la página en un `<form>` y sin eso los botones provocan submit y recarga.
 6. La caché del geo (`web/osm_raw_cm.json`) no va versionada: el GeoJSON oficial (`web/geo_municipios_madrid.geojson`) regenera `PV_GEO_MUNIS` sin tocar Overpass; `FORCE_RELOAD=1` solo si hay que re-descargar.

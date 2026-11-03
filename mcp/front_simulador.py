@@ -108,7 +108,7 @@ FRONT_SIM = r"""<style>
    <div class="note">Se emplean los modelos <b>M1</b> (proyeccion base al a&ntilde;o seleccionado), <b>M2</b> (5 dimensiones del estado) y <b>M4</b> (stocks proyectados: viviendas/salud/paradas + escuelas esperadas)</div>
   </div>
   <div class="stage locked" id="swStage">
-   <div id="swOverlay"><span id="swSpin" class="spin" style="display:none"></span>Ejecuta la simulaci&oacute;n para visualizar</div>
+   <div id="swOverlay"><span id="swSpin" class="spin" style="display:none"></span><span id="swOverlayTx">Ejecuta la simulaci&oacute;n para visualizar</span></div>
    <div id="swRes" style="padding:16px">
     <div class="kpis">
      <div class="kpi"><div class="l">&Iacute;ndice antes &rarr; escenario</div><b><span id="swIdxA">--</span> &rarr; <span id="swIdxB">--</span></b><div class="s"><span id="swDelta"></span> <span id="swLimit" style="color:#64748b"></span></div></div>     <div class="kpi"><div class="l">Poblaci&oacute;n proyectada M1</div><b id="swPobBase">--</b><div class="s">banda <span id="swBand">--</span> &middot; factor <span id="swFactor">--</span></div></div>
@@ -136,7 +136,7 @@ FRONT_SIM = r"""<style>
  function $(i){return document.getElementById(i);}
  function esc(s){return (s==null?"":(""+s)).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
  function num(v,d){return (v==null||v==="")?"--":Number(v).toFixed(d==null?0:d);}
- function api(n,p,cb){apex.server.process(n,p,{dataType:"json",success:cb,error:function(){$("swErr").style.display="block";$("swErr").textContent="El servidor respondio con error; revisa el log de la base.";$("swBtn").disabled=false;$("swSpin").style.display="none";}});}
+ function api(n,p,cb){apex.server.process(n,p,{dataType:"json",success:cb,error:function(){$("swErr").style.display="block";$("swErr").textContent="El servidor respondio con error; revisa el log de la base.";$("swBtn").disabled=false;$("swSpin").style.display="none";var tx=document.getElementById("swOverlayTx"),ov=document.getElementById("swOverlay");if(tx){tx.textContent="Ejecuta la simulaci\u00f3n para visualizar";}if(ov)ov.style.display="flex";}});}
  function fmtDif(n){var x=Math.round(Number(n)||0);return x>0?"+"+x.toLocaleString("es-ES"):x<0?x.toLocaleString("es-ES"):"0";}
  function pintaDif(id,n){var el=$(id+"V");var x=Math.round(Number(n)||0);el.textContent=fmtDif(x);el.className="difval"+(x>0?" pos":x<0?" neg":" zero");}
  function ponSlider(id,min,max){var el=$(id);var v=Math.round(Number(el.value)||0);min=Math.round(min);max=Math.round(max);if(min>max){var m=min;min=max;max=m;}el.min=min;el.max=max;el.step=1;el.value=Math.min(Math.max(v,min),max);pintaDif(id,el.value);}
@@ -185,7 +185,7 @@ FRONT_SIM = r"""<style>
  function run(){
   if($("swBtn").disabled)return;
   $("swErr").style.display="none";
-  $("swBtn").disabled=true;$("swSpin").style.display="block";
+  $("swBtn").disabled=true;$("swSpin").style.display="block";$("swOverlayTx").textContent="Cargando\u2026";$("swOverlay").style.display="flex";
   api("SIMULAR",{x01:$("swCod").value,x02:$("swAnio").value,x03:$("swPop").value||0,x04:$("swViv").value||0,x05:$("swSal").value||0,x06:$("swEsc").value||0,x07:$("swPar").value||0},function(r){
    $("swBtn").disabled=false;$("swSpin").style.display="none";
    render(r);

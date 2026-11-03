@@ -15,7 +15,7 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 from src.common.dataset import cargar_municipios  # noqa: E402
 from src.common.oracle import conectar  # noqa: E402
-from web.descargar_geojson import (  # noqa: E402
+from mcp.descargar_geojson import (  # noqa: E402
     OUT_JSON,
     ensamblar_anillos,
     cerrar_ring,
@@ -102,7 +102,7 @@ def main() -> None:
                     raise SystemExit("[completar] anillo con salto de ensamblaje > 5 km; no se sube")
 
     # simplificar a las mismas reglas del script principal
-    from web.descargar_geojson import dp_simplify
+    from mcp.descargar_geojson import dp_simplify
     poligonos_s = []
     for poligono in poligonos_final:
         pg = [[[round(x, 5), round(y, 5)] for x, y in dp_simplify(ring, 0.0004)] for ring in poligono]
