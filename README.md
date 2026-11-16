@@ -1,4 +1,10 @@
-# Pueblos con vida — Simulador What-If (Datathon 2026)
+# MadridNEXT — Mapa, Simulador What-If y Comparador de Municipios
+# 🥇 Ganador Datathon LodCORE2026
+
+> **Participantes:**
+>  - Juan Torrero de Pablo
+>  - Alejandro Cuntín Bariteau
+>  - Adrián Hernando Muñoz
 
 Simulador de escenarios para los **155 municipios de la Comunidad de Madrid
 con menos de 50.000 habitantes**, desplegado dentro de la aplicación APEX
